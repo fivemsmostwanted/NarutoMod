@@ -22,22 +22,17 @@ public class FireballRenderer extends EntityRenderer<FireballJutsuEntity> {
     public void render(FireballJutsuEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // 1. GET THE DYNAMIC SCALE FROM THE ENTITY
         float scale = entity.getVisualScale();
-
-        // 2. APPLY THE SCALE (Multiplies the X, Y, and Z size)
         poseStack.scale(scale, scale, scale);
 
-        // Keep your translation to center it
-        poseStack.translate(0.0D, 0.5D, 0.0D);
+        // Removed the translation here so it stays perfectly centered!
 
-        // Setup the spinning animation
         this.model.setupAnim(entity, 0.0F, 0.0F, entity.tickCount + partialTicks, 0.0F, 0.0F);
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(net.minecraft.client.renderer.RenderType.entityTranslucent(this.getTextureLocation(entity)));
+        // Swapped to CutoutNoCull to prevent overlapping texture glitches
+        VertexConsumer vertexConsumer = buffer.getBuffer(net.minecraft.client.renderer.RenderType.entityCutoutNoCull(this.getTextureLocation(entity)));
 
-        int glowingLight = 15728640;
-        this.model.renderToBuffer(poseStack, vertexConsumer, glowingLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        this.model.renderToBuffer(poseStack, vertexConsumer, 15728640, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 
         poseStack.popPose();
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);

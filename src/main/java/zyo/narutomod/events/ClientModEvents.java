@@ -25,7 +25,6 @@ public class ClientModEvents {
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(zyo.narutomod.entity.FireballModel.LAYER_LOCATION, zyo.narutomod.entity.FireballModel::createBodyLayer);
         event.registerLayerDefinition(TSUKUYOMI_CROSS_LAYER, zyo.narutomod.entity.TsukuyomiCrossModel::createBodyLayer);
-        // Register the Log Model Layer
         event.registerLayerDefinition(SubstitutionLogModel.LAYER_LOCATION, SubstitutionLogModel::createBodyLayer);
     }
 

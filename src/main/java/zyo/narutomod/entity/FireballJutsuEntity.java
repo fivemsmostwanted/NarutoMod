@@ -53,13 +53,17 @@ public class FireballJutsuEntity extends ThrowableProjectile {
         super.tick();
 
         if (this.level().isClientSide) {
-            // Scale the amount and spread of particles based on how big the fireball is!
             float scale = this.getVisualScale();
             int particleCount = (int) (5 * scale);
 
             for (int i = 0; i < particleCount; i++) {
-                this.level().addParticle(ParticleTypes.FLAME, this.getX(), this.getY() + (0.5D * scale), this.getZ(), 0, 0, 0);
-                this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + (0.5D * scale), this.getZ(), 0, 0, 0);
+                // Create a random offset based on the size of the fireball
+                double offsetX = (this.random.nextDouble() - 0.5) * scale;
+                double offsetY = (this.random.nextDouble() - 0.5) * scale;
+                double offsetZ = (this.random.nextDouble() - 0.5) * scale;
+
+                this.level().addParticle(zyo.narutomod.particle.ModParticles.CUSTOM_FLAME.get(), this.getX() + offsetX, this.getY() + offsetY, this.getZ() + offsetZ, 0, 0, 0);
+                this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX() + offsetX, this.getY() + offsetY, this.getZ() + offsetZ, 0, 0, 0);
             }
         }
     }

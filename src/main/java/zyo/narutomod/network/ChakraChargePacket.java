@@ -40,11 +40,13 @@ public class ChakraChargePacket {
                     // Spawn Blue Aura Particles around the player!
                     if (player.level() instanceof ServerLevel serverLevel) {
                         for (int i = 0; i < 3; i++) {
-                            serverLevel.sendParticles(ParticleTypes.ENCHANT, // Looks like blue magic!
+
+                            // SWAPPED ParticleTypes.ENCHANT FOR CUSTOM_CHAKRA
+                            serverLevel.sendParticles(zyo.narutomod.particle.ModParticles.CUSTOM_CHAKRA.get(),
                                     player.getX() + (Math.random() - 0.5),
-                                    player.getY() + (Math.random() * 2), // Random height around body
-                                    player.getZ() + (Math.random() - 0.5),
-                                    1, 0.0, 0.1, 0.0, 0.1);
+                            player.getY() + (Math.random() * 2),
+                            player.getZ() + (Math.random() - 0.5),
+                            1, 0.0, 0.1, 0.0, 0.1);
                         }
                     }
                 }

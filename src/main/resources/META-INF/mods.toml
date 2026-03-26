@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="All rights reserved"
+
+[[mods]]
+modId="narutomod"
+version="1.0.0"
+displayName="Naruto Mod"
+authors="Zyo"
+description='''
+    A Naruto mod featuring a hand-sign system and Uchiha abilities.
+    '''
+
+[[dependencies.narutomod]]
+modId="forge"
+mandatory=true
+versionRange="${forge_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.narutomod]]
+modId="minecraft"
+mandatory=true
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"

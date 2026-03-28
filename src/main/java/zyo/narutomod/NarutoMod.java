@@ -6,30 +6,31 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import software.bernie.geckolib.GeckoLib;
+import zyo.narutomod.network.PacketHandler;
+import zyo.narutomod.particle.ModParticles;
 import zyo.narutomod.sound.ModSounds;
+import zyo.narutomod.entity.ModEntities;
 
 @Mod(NarutoMod.MODID)
 public class NarutoMod {
     public static final String MODID = "narutomod";
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public NarutoMod() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        software.bernie.geckolib.GeckoLib.initialize();
+    public NarutoMod(IEventBus modEventBus) {
+        GeckoLib.initialize();
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
 
         MinecraftForge.EVENT_BUS.register(this);
-        zyo.narutomod.network.PacketHandler.register();
-        zyo.narutomod.item.ModItems.register(modEventBus);
-        zyo.narutomod.particle.ModParticles.register(modEventBus);
+        
+        PacketHandler.register();
+        ModItems.register(modEventBus);
+        ModParticles.register(modEventBus);
         ModSounds.register(modEventBus);
-        zyo.narutomod.entity.ModEntities.ENTITIES.register(modEventBus);
+        ModEntities.ENTITIES.register(modEventBus);
     }
 
     private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
@@ -38,8 +39,8 @@ public class NarutoMod {
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            event.accept(zyo.narutomod.item.ModItems.SASUKE_KATANA);
-            event.accept(zyo.narutomod.item.ModItems.AKATSUKI_CLOAK.get());
+            event.accept(ModItems.SASUKE_KATANA);
+            event.accept(ModItems.AKATSUKI_CLOAK);
         }
     }
 }

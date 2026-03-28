@@ -17,8 +17,25 @@ public class HandSignManager {
         comboTimer = 70;
         inputCooldown = 1;
 
-        System.out.println("HANDMANAGER Added Sign: " + signId + ". Current sequence: " + currentSequence);
+        if (net.minecraft.client.Minecraft.getInstance().player != null) {
+            zyo.narutomod.client.PlayerAnimManager.playAnimation(
+                    net.minecraft.client.Minecraft.getInstance().player,
+                    "handanim"
+            );
+
+            net.minecraft.client.Minecraft.getInstance().player.playSound(zyo.narutomod.sound.ModSounds.HANDSIGN.get(), 1.0F, 1.0F);
+        }
+
         PacketHandler.INSTANCE.sendToServer(new JutsuC2SPacket(new ArrayList<>(currentSequence)));
+    }
+
+    public static void clearCombo(String reason) {
+        currentSequence.clear();
+        comboTimer = 0;
+
+        if (net.minecraft.client.Minecraft.getInstance().player != null) {
+            zyo.narutomod.client.PlayerAnimManager.stopAnimation(net.minecraft.client.Minecraft.getInstance().player);
+        }
     }
 
     public static void tick() {
@@ -30,12 +47,6 @@ public class HandSignManager {
                 clearCombo("Timer experied too slow");
             }
         }
-    }
-
-    public static void clearCombo(String reason) {
-        System.out.println("HANDMANAGER Sequence cleared, reason: " + reason);
-        currentSequence.clear();
-        comboTimer = 0;
     }
 
     public static int getComboTimer() {

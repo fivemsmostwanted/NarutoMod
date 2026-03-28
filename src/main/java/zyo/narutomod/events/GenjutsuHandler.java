@@ -25,7 +25,6 @@ public class GenjutsuHandler {
 
             if (ticksLeft > 0) {
                 entity.getPersistentData().putInt("FreezeTicks", ticksLeft - 1);
-
                 entity.setDeltaMovement(0, -0.05, 0);
 
                 if (entity instanceof ServerPlayer sp) {
@@ -36,6 +35,58 @@ public class GenjutsuHandler {
                 }
             } else {
                 thawEntity(entity);
+            }
+        }
+
+        // --- 2. Tsukuyomi Genjutsu Logic ---
+        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped")) {
+            int tsukuyomiTicks = entity.getPersistentData().getInt("TsukuyomiTicks");
+
+            if (tsukuyomiTicks > 0) {
+                entity.getPersistentData().putInt("TsukuyomiTicks", tsukuyomiTicks - 1);
+
+                double lockX = entity.getPersistentData().getDouble("TsukuyomiX");
+                double lockY = entity.getPersistentData().getDouble("TsukuyomiY");
+                double lockZ = entity.getPersistentData().getDouble("TsukuyomiZ");
+                float lockYaw = entity.getPersistentData().getFloat("TsukuyomiYaw");
+                float lockPitch = entity.getPersistentData().getFloat("TsukuyomiPitch");
+
+                entity.setDeltaMovement(0, 0, 0);
+
+                if (entity instanceof ServerPlayer sp) {
+                    sp.connection.teleport(lockX, lockY, lockZ, lockYaw, lockPitch);
+                } else {
+                    entity.setPos(lockX, lockY, lockZ);
+                    entity.setYRot(lockYaw);
+                    entity.setXRot(lockPitch);
+                    entity.setYHeadRot(lockYaw);
+                }
+            } else {
+                entity.getPersistentData().putBoolean("TsukuyomiTrapped", false);
+                int casterId = entity.getPersistentData().getInt("TsukuyomiCasterId");
+
+                entity.getPersistentData().remove("TsukuyomiTicks");
+                entity.getPersistentData().remove("TsukuyomiCasterId");
+                entity.getPersistentData().remove("TsukuyomiX");
+                entity.getPersistentData().remove("TsukuyomiY");
+                entity.getPersistentData().remove("TsukuyomiZ");
+                entity.getPersistentData().remove("TsukuyomiYaw");
+                entity.getPersistentData().remove("TsukuyomiPitch");
+
+                if (entity instanceof ServerPlayer sp) {
+                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> sp),
+                            new zyo.narutomod.network.TsukuyomiSyncPacket(entity.getId(), casterId, false, 0, 0)
+                    );
+                }
+
+                net.minecraft.world.entity.Entity caster = entity.level().getEntity(casterId);
+                if (caster instanceof ServerPlayer casterPlayer) {
+                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> casterPlayer),
+                            new zyo.narutomod.network.TsukuyomiSyncPacket(entity.getId(), casterId, false, 0, 0)
+                    );
+                }
             }
         }
     }

@@ -6,9 +6,11 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -23,6 +25,7 @@ public class CrosshairRenderer {
     private static float lerpX = -1;
     private static float lerpY = -1;
     private static final float SMOOTHNESS = 0.35f;
+    private static double currentAimDepth = 20.0;
 
     public static Entity lockedTarget = null;
     private static boolean middleMouseWasDown = false;
@@ -42,6 +45,8 @@ public class CrosshairRenderer {
         boolean isLocked = (lockedTarget != null);
 
         if (isLocked) {
+            forceCombatRotation(mc, lockedTarget);
+
             Vec3 targetPos = lockedTarget.position().add(0, lockedTarget.getBbHeight() / 2.0, 0);
             Vector4f screenPos = projectToScreen(targetPos, mc, width, height);
 
@@ -51,6 +56,23 @@ public class CrosshairRenderer {
             } else {
                 lockedTarget = null;
                 isLocked = false;
+            }
+        } else {
+            double targetDepth = 20.0;
+
+            if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK) {
+                targetDepth = mc.player.getEyePosition(mc.getFrameTime()).distanceTo(mc.hitResult.getLocation());
+            }
+
+            currentAimDepth += (targetDepth - currentAimDepth) * 0.2;
+
+            Vec3 aimTarget = mc.player.getEyePosition(mc.getFrameTime())
+                    .add(mc.player.getViewVector(mc.getFrameTime()).scale(currentAimDepth));
+
+            Vector4f screenPos = projectToScreen(aimTarget, mc, width, height);
+            if (screenPos.w() > 0) {
+                targetX = screenPos.x();
+                targetY = screenPos.y();
             }
         }
 
@@ -83,6 +105,28 @@ public class CrosshairRenderer {
         }
 
         graphics.pose().popPose();
+    }
+
+    private static void forceCombatRotation(Minecraft mc, Entity target) {
+        Vec3 playerPos = mc.player.getEyePosition(mc.getFrameTime());
+        Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2.0, 0);
+
+        double dX = targetPos.x - playerPos.x;
+        double dY = targetPos.y - playerPos.y;
+        double dZ = targetPos.z - playerPos.z;
+
+        double horizontalDistance = Math.sqrt(dX * dX + dZ * dZ);
+        float targetYaw = (float) (Math.toDegrees(Math.atan2(dZ, dX)) - 90.0F);
+        float targetPitch = (float) -(Math.toDegrees(Math.atan2(dY, horizontalDistance)));
+
+        float currentYaw = mc.player.getYRot();
+        float currentPitch = mc.player.getXRot();
+
+        float yawDiff = Mth.wrapDegrees(targetYaw - currentYaw);
+        float pitchDiff = Mth.wrapDegrees(targetPitch - currentPitch);
+
+        mc.player.setYRot(currentYaw + yawDiff * 0.15f);
+        mc.player.setXRot(currentPitch + pitchDiff * 0.15f);
     }
 
     private static void handleLockOnInput(Minecraft mc) {

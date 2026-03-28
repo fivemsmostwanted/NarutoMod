@@ -23,6 +23,7 @@ public class ModClientEvents {
 
     public static final java.util.Map<Integer, Boolean> tsukuyomiVictims = new java.util.HashMap<>();
     public static int dimensionTimer = 0;
+    public static boolean wasCharging = false;
 
     private static zyo.narutomod.entity.TsukuyomiCrossModel<net.minecraft.world.entity.LivingEntity> crossModel;
 
@@ -36,9 +37,6 @@ public class ModClientEvents {
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png"),
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png")
     };
-
-    private static final ResourceLocation CROSSHAIR_VANILLA = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/crosshair.png");
-    private static final ResourceLocation CROSSHAIR_SHARINGAN = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/crosshair.png");
 
     public static boolean isMySharinganActive() {
         net.minecraft.client.player.LocalPlayer player = Minecraft.getInstance().player;
@@ -79,6 +77,19 @@ public class ModClientEvents {
             net.minecraft.client.player.LocalPlayer player = mc.player;
             if (player == null) return;
 
+            if (player.getPersistentData().getBoolean("TsukuyomiTrapped")) {
+                float lockYaw = player.getPersistentData().getFloat("TsukuyomiYaw");
+                float lockPitch = player.getPersistentData().getFloat("TsukuyomiPitch");
+
+                player.setYRot(lockYaw);
+                player.setXRot(lockPitch);
+                player.yRotO = lockYaw;
+                player.xRotO = lockPitch;
+                player.setYHeadRot(lockYaw);
+
+                return;
+            }
+
             boolean isGenjutsuMode = HandSignKeys.GENJUTSU_MODIFIER.isDown();
 
             // 1. Handle Hand Signs (Only call consumeClick ONCE)
@@ -101,6 +112,18 @@ public class ModClientEvents {
             if (HandSignKeys.CHARGE_KEY.isDown()) {
                 if (player.tickCount % 4 == 0) {
                     PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.ChakraChargePacket());
+                }
+
+                if (!wasCharging) {
+                    zyo.narutomod.client.PlayerAnimManager.playAnimation(player, "chakraanim");
+                    wasCharging = true;
+                }
+            } else {
+                if (wasCharging) {
+                    if (HandSignManager.getComboTimer() == 0) {
+                        zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
+                    }
+                    wasCharging = false;
                 }
             }
 
@@ -169,12 +192,21 @@ public class ModClientEvents {
             int screenWidth = mc.getWindow().getGuiScaledWidth();
             int screenHeight = mc.getWindow().getGuiScaledHeight();
 
-            if (mc.player.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS) || dimensionTimer > 0) {
+            if (mc.player.getPersistentData().getBoolean("TsukuyomiTrapped")) {
                 graphics.fill(0, 0, screenWidth, screenHeight, 0x99440000);
             } else if (isMySharinganActive()) {
-                long timeOfDay = mc.level.getDayTime() % 24000;
-                if (timeOfDay >= 13000 && timeOfDay <= 23000) {
-                    graphics.fill(0, 0, screenWidth, screenHeight, 0x15FF0000);
+                boolean isCasting = mc.level.players().stream().anyMatch(p ->
+                        p.getPersistentData().getBoolean("TsukuyomiTrapped") &&
+                                p.getPersistentData().getInt("TsukuyomiCasterId") == mc.player.getId()
+                );
+
+                if (isCasting) {
+                    graphics.fill(0, 0, screenWidth, screenHeight, 0x99440000);
+                } else {
+                    long timeOfDay = mc.level.getDayTime() % 24000;
+                    if (timeOfDay >= 13000 && timeOfDay <= 23000) {
+                        graphics.fill(0, 0, screenWidth, screenHeight, 0x15FF0000);
+                    }
                 }
             }
 
@@ -300,11 +332,12 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void onLivingRenderPre(net.minecraftforge.client.event.RenderLivingEvent.Pre<?, ?> event) {
         net.minecraft.world.entity.LivingEntity entity = event.getEntity();
+        net.minecraft.client.player.LocalPlayer localPlayer = Minecraft.getInstance().player;
 
-        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped")) {
-            event.getPoseStack().pushPose();
-            event.getPoseStack().translate(0.0D, 0.8D, 0.0D);
+        if (localPlayer == null) return;
 
+        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped") &&
+                (localPlayer.getId() == entity.getId() || localPlayer.getId() == entity.getPersistentData().getInt("TsukuyomiCasterId"))) {
             if (event.getRenderer().getModel() instanceof net.minecraft.client.model.HumanoidModel<?> model) {
                 model.rightArm.visible = false;
                 model.leftArm.visible = false;
@@ -320,9 +353,11 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void onLivingRenderPost(net.minecraftforge.client.event.RenderLivingEvent.Post<?, ?> event) {
         net.minecraft.world.entity.LivingEntity entity = event.getEntity();
+        net.minecraft.client.player.LocalPlayer localPlayer = Minecraft.getInstance().player;
 
-        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped")) {
-            event.getPoseStack().popPose();
+        if (localPlayer == null) return;
+        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped") &&
+                (localPlayer.getId() == entity.getId() || localPlayer.getId() == entity.getPersistentData().getInt("TsukuyomiCasterId"))) {
 
             if (event.getRenderer().getModel() instanceof net.minecraft.client.model.HumanoidModel<?> model) {
                 model.rightArm.visible = true;

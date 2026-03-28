@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import software.bernie.geckolib.GeckoLib;
+import zyo.narutomod.sound.ModSounds;
 
 @Mod(NarutoMod.MODID)
 public class NarutoMod {
@@ -27,6 +28,7 @@ public class NarutoMod {
         zyo.narutomod.network.PacketHandler.register();
         zyo.narutomod.item.ModItems.register(modEventBus);
         zyo.narutomod.particle.ModParticles.register(modEventBus);
+        ModSounds.register(modEventBus);
         zyo.narutomod.entity.ModEntities.ENTITIES.register(modEventBus);
     }
 

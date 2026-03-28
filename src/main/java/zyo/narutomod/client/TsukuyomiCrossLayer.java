@@ -24,10 +24,14 @@ public class TsukuyomiCrossLayer<T extends LivingEntity, M extends net.minecraft
 
     @Override
     public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
+        net.minecraft.client.player.LocalPlayer localPlayer = net.minecraft.client.Minecraft.getInstance().player;
+        if (localPlayer == null) return;
 
-        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped")) {
+        if (entity.getPersistentData().getBoolean("TsukuyomiTrapped") &&
+                (localPlayer.getId() == entity.getId() || localPlayer.getId() == entity.getPersistentData().getInt("TsukuyomiCasterId"))) {
+
             poseStack.pushPose();
-            poseStack.translate(0.0D, 0.3D, 0.4D);
+            poseStack.translate(0.0D, 0.3D, -0.15D);
             VertexConsumer crossBuffer = buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
             this.crossModel.renderToBuffer(poseStack, crossBuffer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
             poseStack.popPose();

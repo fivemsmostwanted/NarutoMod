@@ -7,8 +7,6 @@ import net.minecraftforge.network.NetworkEvent;
 import zyo.narutomod.capability.ShinobiDataProvider;
 import zyo.narutomod.jutsu.JutsuData;
 import zyo.narutomod.jutsu.JutsuManager;
-import zyo.narutomod.entity.ModEntities;
-import zyo.narutomod.entity.SubstitutionLogEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +16,7 @@ public class JutsuC2SPacket {
     private final List<Integer> sequence;
 
     public JutsuC2SPacket(List<Integer> sequence) {
-        this.sequence = new ArrayList<>(sequence); // Copy it to be safe
+        this.sequence = new ArrayList<>(sequence);
     }
 
     public JutsuC2SPacket(FriendlyByteBuf buf) {
@@ -47,31 +45,51 @@ public class JutsuC2SPacket {
                     .findFirst()
                     .orElse(null);
 
-            if (castingJutsu == null) {
-                return;
-            }
+            if (castingJutsu != null) {
+                player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                    if (stats.getChakra() >= castingJutsu.chakra_cost) {
+                        float newChakra = stats.getChakra() - castingJutsu.chakra_cost;
+                        stats.setChakra(newChakra);
 
-            player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                if (stats.getChakra() >= castingJutsu.chakra_cost) {
-                    float newChakra = stats.getChakra() - castingJutsu.chakra_cost;
-                    stats.setChakra(newChakra);
+                        PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new SyncChakraPacket(newChakra)
+                        );
 
-                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                            new zyo.narutomod.network.SyncChakraPacket(newChakra)
-                    );
+                        player.displayClientMessage(Component.literal("§bCasting: " + castingJutsu.name + "!"), true);
+                        player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_CAST.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
 
-                    player.displayClientMessage(Component.literal("§bCasting: " + castingJutsu.name + "!"), true);
+                        zyo.narutomod.jutsu.JutsuActions.execute(castingJutsu.id, player);
 
-                    zyo.narutomod.jutsu.JutsuActions.execute(castingJutsu.id, player);
+                        PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new ClearHandSignsPacket()
+                        );
+                    } else {
+                        player.displayClientMessage(Component.literal("§cNot enough Chakra! You need " + castingJutsu.chakra_cost), true);
+                        player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_FAIL.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                        PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new ClearHandSignsPacket()
+                        );
+                    }
+                });
+            } else {
+                boolean isValidPrefix = JutsuManager.LOADED_JUTSUS.values().stream()
+                        .anyMatch(data -> data.hand_signs.size() >= this.sequence.size() &&
+                                data.hand_signs.subList(0, this.sequence.size()).equals(this.sequence));
+
+                if (!isValidPrefix) {
+                    player.displayClientMessage(Component.literal("§cInvalid Hand Sign sequence!"), true);
+                    player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_FAIL.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+
                     PacketHandler.INSTANCE.send(
                             net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                             new ClearHandSignsPacket()
                     );
-                } else {
-                    player.displayClientMessage(Component.literal("§cNot enough Chakra! You need " + castingJutsu.chakra_cost), true);
                 }
-            });
+            }
         });
         context.setPacketHandled(true);
     }

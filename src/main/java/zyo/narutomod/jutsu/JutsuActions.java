@@ -221,8 +221,6 @@ public class JutsuActions {
                         }
                     }
 
-
-
                     player.level().playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.ELDER_GUARDIAN_CURSE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
                     player.displayClientMessage(net.minecraft.network.chat.Component.literal("§Target caught in Shackling Stakes for " + (duration/20) + "s."), true);
                     PacketHandler.INSTANCE.send(

@@ -27,8 +27,6 @@ public class SyncChakraPacket {
                 net.minecraft.client.Minecraft.getInstance().player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     stats.setChakra(this.chakra);
                 });
-
-                zyo.narutomod.logic.HandSignManager.currentSequence.clear();
             }
         });
         context.setPacketHandled(true);

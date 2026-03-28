@@ -2,6 +2,8 @@ package zyo.narutomod.logic;
 
 import java.util.ArrayList;
 import java.util.List;
+import zyo.narutomod.network.PacketHandler;
+import zyo.narutomod.network.JutsuC2SPacket;
 
 public class HandSignManager {
     public static final List<Integer> currentSequence = new ArrayList<>();
@@ -12,32 +14,35 @@ public class HandSignManager {
         if (inputCooldown > 0) return;
 
         currentSequence.add(signId);
-        comboTimer = 30;
-
+        comboTimer = 70;
         inputCooldown = 1;
 
-        System.out.println("Added Sign: " + signId + " | Current Sequence: " + currentSequence);
-
-        zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(
-                new zyo.narutomod.network.JutsuC2SPacket(currentSequence)
-        );
-    }
-
-    public static java.util.List<Integer> getSigns() {
-        return currentSequence;
+        System.out.println("HANDMANAGER Added Sign: " + signId + ". Current sequence: " + currentSequence);
+        PacketHandler.INSTANCE.sendToServer(new JutsuC2SPacket(new ArrayList<>(currentSequence)));
     }
 
     public static void tick() {
-        if (inputCooldown > 0) {
-            inputCooldown--;
-        }
+        if (inputCooldown > 0) inputCooldown--;
 
         if (comboTimer > 0) {
             comboTimer--;
-            if (comboTimer == 0) {
-                currentSequence.clear();
-                System.out.println("Combo timed out. Sequence cleared.");
+            if (comboTimer == 0 && !currentSequence.isEmpty()) {
+                clearCombo("Timer experied too slow");
             }
         }
+    }
+
+    public static void clearCombo(String reason) {
+        System.out.println("HANDMANAGER Sequence cleared, reason: " + reason);
+        currentSequence.clear();
+        comboTimer = 0;
+    }
+
+    public static int getComboTimer() {
+        return comboTimer;
+    }
+
+    public static List<Integer> getSigns() {
+        return currentSequence;
     }
 }

@@ -37,6 +37,9 @@ public class ModClientEvents {
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png")
     };
 
+    private static final ResourceLocation CROSSHAIR_VANILLA = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/crosshair.png");
+    private static final ResourceLocation CROSSHAIR_SHARINGAN = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/crosshair.png");
+
     public static boolean isMySharinganActive() {
         net.minecraft.client.player.LocalPlayer player = Minecraft.getInstance().player;
         return player != null && activeSharingans.getOrDefault(player.getUUID(), false);
@@ -69,42 +72,45 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            if (dimensionTimer > 0) {
-                dimensionTimer--;
-            }
+            if (dimensionTimer > 0) dimensionTimer--;
             HandSignManager.tick();
+
+            Minecraft mc = Minecraft.getInstance();
+            net.minecraft.client.player.LocalPlayer player = mc.player;
+            if (player == null) return;
 
             boolean isGenjutsuMode = HandSignKeys.GENJUTSU_MODIFIER.isDown();
 
+            // 1. Handle Hand Signs (Only call consumeClick ONCE)
             if (HandSignKeys.SIGN_1.consumeClick()) handleInput(1, isGenjutsuMode);
             if (HandSignKeys.SIGN_2.consumeClick()) handleInput(2, isGenjutsuMode);
             if (HandSignKeys.SIGN_3.consumeClick()) handleInput(3, isGenjutsuMode);
-            if (HandSignKeys.SIGN_4.consumeClick()) handleInput(4, isGenjutsuMode);
+            if (HandSignKeys.SIGN_4.consumeClick()) {
+                if (isMySharinganActive() && mySharinganStage() == 6) {
+                    PacketHandler.INSTANCE.sendToServer(new AmenotejikaraPacket());
+                }
+                else {
+                    handleInput(4, isGenjutsuMode);
+                }
+            }
             if (HandSignKeys.SIGN_5.consumeClick()) handleInput(5, isGenjutsuMode);
             if (HandSignKeys.SIGN_6.consumeClick()) handleInput(6, isGenjutsuMode);
             if (HandSignKeys.SIGN_7.consumeClick()) handleInput(7, isGenjutsuMode);
 
-            if (HandSignKeys.SIGN_1.consumeClick()) HandSignManager.addSign(1);
-            if (HandSignKeys.SIGN_2.consumeClick()) HandSignManager.addSign(2);
-            if (HandSignKeys.SIGN_3.consumeClick()) HandSignManager.addSign(3);
-            if (HandSignKeys.SIGN_4.consumeClick()) HandSignManager.addSign(4);
-            if (HandSignKeys.SIGN_5.consumeClick()) HandSignManager.addSign(5);
-            if (HandSignKeys.SIGN_6.consumeClick()) HandSignManager.addSign(6);
-            if (HandSignKeys.SIGN_7.consumeClick()) HandSignManager.addSign(7);
-
-            net.minecraft.client.player.LocalPlayer player = Minecraft.getInstance().player;
-            if (player != null && HandSignKeys.CHARGE_KEY.isDown()) {
+            // 2. Chakra Charging
+            if (HandSignKeys.CHARGE_KEY.isDown()) {
                 if (player.tickCount % 4 == 0) {
                     PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.ChakraChargePacket());
                 }
             }
 
+            // 3. Eye Evolution (F Key)
             while (HandSignKeys.SIGN_8.consumeClick()) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     if (stats.isSharinganActive()) {
                         if (stats.getSharinganStage() >= 3) {
                             int nextStage = stats.getSharinganStage() + 1;
-                            if (nextStage > 6) nextStage = 3; // Loop 3 -> MS -> EMS -> Rinnegan -> 3
+                            if (nextStage > 6) nextStage = 3;
                             PacketHandler.INSTANCE.sendToServer(new SharinganTogglePacket(true, nextStage));
                             player.displayClientMessage(net.minecraft.network.chat.Component.literal("§4Eyes Evolving..."), true);
                         } else {
@@ -114,6 +120,7 @@ public class ModClientEvents {
                 });
             }
 
+            // 4. Sharingan Toggle
             while (HandSignKeys.SHARINGAN_KEY.consumeClick()) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     boolean isNowActive = !stats.isSharinganActive();
@@ -121,21 +128,8 @@ public class ModClientEvents {
                 });
             }
 
-            while (HandSignKeys.AMENO_KEY.consumeClick()) {
-                if (isMySharinganActive() && mySharinganStage() == 6) {
-                    PacketHandler.INSTANCE.sendToServer(new AmenotejikaraPacket());
-                }
-                else if (isMySharinganActive()) {
-                    Minecraft.getInstance().player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§cYour Sharingan is not evolved enough for this..."), true);
-                }
-                else {
-                    HandSignManager.addSign(4);
-                }
-            }
-
             while (HandSignKeys.MENU_KEY.consumeClick()) {
-                Minecraft.getInstance().setScreen(new zyo.narutomod.client.gui.NinjaCardScreen());
+                mc.setScreen(new zyo.narutomod.client.gui.NinjaCardScreen());
             }
         }
     }
@@ -158,6 +152,15 @@ public class ModClientEvents {
         if (isSurvivalHudElement(event.getOverlay())) {
             event.getGuiGraphics().pose().pushPose();
             event.getGuiGraphics().pose().translate(0, -35, 0);
+        }
+
+        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()) {
+            event.setCanceled(true);
+
+            int screenWidth = mc.getWindow().getGuiScaledWidth();
+            int screenHeight = mc.getWindow().getGuiScaledHeight();
+
+            renderCustomCrosshair(event.getGuiGraphics(), screenWidth, screenHeight);
         }
 
         if (event.getOverlay() == VanillaGuiOverlay.HOTBAR.type()) {
@@ -277,8 +280,14 @@ public class ModClientEvents {
                 graphics.fill(chakraX + barWidth, chakraY, chakraX + barWidth + 1, chakraY + barHeight, 0xFF000000);
             });
 
+            // Just for testing, add this inside your RenderGuiOverlayEvent
+            graphics.drawString(mc.font, "Combo Timer: " + HandSignManager.getComboTimer(), 10, 10, 0xFFFFFF);
             event.setCanceled(true);
         }
+    }
+
+    private static void renderCustomCrosshair(GuiGraphics graphics, int width, int height) {
+        zyo.narutomod.client.gui.CrosshairRenderer.render(graphics, width, height);
     }
 
     @SubscribeEvent

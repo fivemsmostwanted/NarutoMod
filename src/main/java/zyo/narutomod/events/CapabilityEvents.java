@@ -25,6 +25,8 @@ public class CapabilityEvents {
         public static void entityAttributeEvent(net.minecraftforge.event.entity.EntityAttributeCreationEvent event) {
             event.put(zyo.narutomod.entity.ModEntities.CROW_CLONE.get(),
                     zyo.narutomod.entity.CrowCloneEntity.createAttributes().build());
+            event.put(zyo.narutomod.entity.ModEntities.SUSANOO.get(),
+                    zyo.narutomod.entity.SusanooEntity.createAttributes().build());
         }
     }
 

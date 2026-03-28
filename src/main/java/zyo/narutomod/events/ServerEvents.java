@@ -74,6 +74,11 @@ public class ServerEvents {
                             baseDrain *= 1.5f;
                         }
 
+                        boolean hasSusanoo = player.getPassengers().stream().anyMatch(e -> e instanceof zyo.narutomod.entity.SusanooEntity);
+                        if (hasSusanoo) {
+                            baseDrain += 25.0f;
+                        }
+
                         float newChakra = currentChakra - baseDrain;
 
                         if (newChakra <= 0) {

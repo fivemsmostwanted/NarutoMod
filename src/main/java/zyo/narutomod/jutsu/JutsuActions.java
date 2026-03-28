@@ -58,7 +58,6 @@ public class JutsuActions {
 
         ACTIONS.put(3, JutsuActions::performNormalClone);
 
-
         INSTANT_ACTIONS.put(1, JutsuActions::performParalysisGenjutsu);
         INSTANT_ACTIONS.put(2, JutsuActions::prepCrowFeint);
     }

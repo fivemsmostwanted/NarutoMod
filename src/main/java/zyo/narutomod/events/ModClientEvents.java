@@ -58,10 +58,11 @@ public class ModClientEvents {
                 } else if (isMySharinganActive()) {
                     player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou need the Mangekyo Sharingan to cast Tsukuyomi!"), true);
                 }
+            } else if (signId == 4) {
+                zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.SusanooTogglePacket());
             } else {
                 zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.InstantGenjutsuPacket(signId));
             }
-
         } else {
             zyo.narutomod.logic.HandSignManager.addSign(signId);
         }
@@ -149,6 +150,10 @@ public class ModClientEvents {
                     boolean isNowActive = !stats.isSharinganActive();
                     PacketHandler.INSTANCE.sendToServer(new SharinganTogglePacket(isNowActive, stats.getSharinganStage()));
                 });
+            }
+
+            while (zyo.narutomod.keys.HandSignKeys.SUSANOO_TIER_KEY.consumeClick()) {
+                zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.SusanooTierPacket());
             }
 
             while (HandSignKeys.MENU_KEY.consumeClick()) {

@@ -46,6 +46,10 @@ public class SharinganTogglePacket {
                 } else {
                     player.removeEffect(MobEffects.MOVEMENT_SPEED);
                     player.removeEffect(MobEffects.DAMAGE_BOOST);
+
+                    player.getPassengers().stream()
+                            .filter(e -> e instanceof zyo.narutomod.entity.SusanooEntity)
+                            .forEach(net.minecraft.world.entity.Entity::discard);
                 }
                 ServerEvents.activeSharingans.put(player.getUUID(), this.activate);
                 ServerEvents.sharinganStages.put(player.getUUID(), this.stage);

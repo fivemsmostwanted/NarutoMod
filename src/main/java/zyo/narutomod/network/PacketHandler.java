@@ -30,5 +30,7 @@ public class PacketHandler {
         INSTANCE.registerMessage(id++, InstantGenjutsuPacket.class, InstantGenjutsuPacket::encode, InstantGenjutsuPacket::new, InstantGenjutsuPacket::handle);
         INSTANCE.registerMessage(id++, StatUpgradePacket.class, StatUpgradePacket::encode, StatUpgradePacket::new, StatUpgradePacket::handle);
         INSTANCE.registerMessage(id++, SyncStatsPacket.class, SyncStatsPacket::encode, SyncStatsPacket::new, SyncStatsPacket::handle);
+        INSTANCE.registerMessage(id++, SusanooTierPacket.class, SusanooTierPacket::encode, SusanooTierPacket::new, SusanooTierPacket::handle);
+        INSTANCE.registerMessage(id++, SusanooTogglePacket.class, SusanooTogglePacket::encode, SusanooTogglePacket::new, SusanooTogglePacket::handle);
     }
 }

@@ -19,7 +19,7 @@ public class NarutoMod {
     public NarutoMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        GeckoLib.initialize();
+        software.bernie.geckolib.GeckoLib.initialize();
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);

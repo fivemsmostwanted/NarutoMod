@@ -1,11 +1,6 @@
 package zyo.narutomod.network;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -38,10 +33,8 @@ public class TsukuyomiSyncPacket {
                 if (entity instanceof net.minecraft.world.entity.LivingEntity target) {
                     if (isTrapped) {
                         System.out.println("Applying NBT Tag to: " + target.getName().getString());
-                        // Attach the invisible "Post-it note" to the victim
                         target.getPersistentData().putBoolean("TsukuyomiTrapped", true);
                     } else {
-                        // Remove it when the Jutsu ends
                         target.getPersistentData().putBoolean("TsukuyomiTrapped", false);
                     }
                 }

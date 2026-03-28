@@ -2,6 +2,7 @@ package zyo.narutomod.capability;
 
 public interface IShinobiData {
     float getChakra();
+    float getMaxChakra();
     void setChakra(float chakra);
 
     int getSharinganStage();
@@ -13,12 +14,17 @@ public interface IShinobiData {
     boolean isInKamuiDimension();
     void setInKamuiDimension(boolean inDimension);
 
-    // NEW: RPG Stats for Scaling
     int getNinjutsuStat();
     void setNinjutsuStat(int level);
 
     int getGenjutsuStat();
     void setGenjutsuStat(int level);
+
+    boolean isCloneInfusionReady();
+    void setCloneInfusionReady(boolean ready);
+
+    UchihaArchetype getArchetype();
+    void setArchetype(UchihaArchetype archetype);
 
     void copyFrom(IShinobiData source);
 }

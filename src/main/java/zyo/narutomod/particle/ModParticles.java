@@ -16,7 +16,6 @@ public class ModParticles {
     public static final DeferredRegister<ParticleType<?>> PARTICLES =
             DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, NarutoMod.MODID);
 
-    // 1. Register the core particle type
     public static final RegistryObject<SimpleParticleType> CUSTOM_FLAME =
             PARTICLES.register("flame", () -> new SimpleParticleType(true));
 
@@ -27,8 +26,6 @@ public class ModParticles {
         PARTICLES.register(eventBus);
     }
 
-    // 2. Tell the game HOW this particle behaves.
-    // We are borrowing the vanilla Flame physics so we don't have to write custom movement math!
     @SubscribeEvent
     public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(CUSTOM_FLAME.get(), net.minecraft.client.particle.FlameParticle.Provider::new);

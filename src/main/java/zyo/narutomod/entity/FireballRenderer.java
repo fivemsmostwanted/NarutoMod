@@ -25,11 +25,7 @@ public class FireballRenderer extends EntityRenderer<FireballJutsuEntity> {
         float scale = entity.getVisualScale();
         poseStack.scale(scale, scale, scale);
 
-        // Removed the translation here so it stays perfectly centered!
-
         this.model.setupAnim(entity, 0.0F, 0.0F, entity.tickCount + partialTicks, 0.0F, 0.0F);
-
-        // Swapped to CutoutNoCull to prevent overlapping texture glitches
         VertexConsumer vertexConsumer = buffer.getBuffer(net.minecraft.client.renderer.RenderType.entityCutoutNoCull(this.getTextureLocation(entity)));
 
         this.model.renderToBuffer(poseStack, vertexConsumer, 15728640, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);

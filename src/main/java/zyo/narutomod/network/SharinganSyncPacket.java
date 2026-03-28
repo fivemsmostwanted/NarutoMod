@@ -35,14 +35,12 @@ public class SharinganSyncPacket {
         context.enqueueWork(() -> {
             net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
             if (player != null) {
-                // Update the Capability so the 'R' key reads the correct stage!
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     stats.setSharinganActive(isActive);
                     stats.setSharinganStage(stage);
                 });
             }
 
-            // Keep the maps updated for the Renderer/Tints
             ModClientEvents.activeSharingans.put(playerId, isActive);
             ModClientEvents.sharinganStages.put(playerId, stage);
         });

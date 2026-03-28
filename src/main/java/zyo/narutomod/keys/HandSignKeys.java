@@ -13,7 +13,6 @@ import org.lwjgl.glfw.GLFW;
 public class HandSignKeys {
     public static final String CATEGORY = "key.categories.naruto_mod";
 
-    // Re-mapped Charge to 'N' or similar to avoid conflict with 'B'
     public static final KeyMapping CHARGE_KEY = new KeyMapping("key.naruto_mod.charge", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, CATEGORY);
 
     public static final KeyMapping SIGN_1 = new KeyMapping("key.narutomod.sign_1", GLFW.GLFW_KEY_Z, CATEGORY);
@@ -26,9 +25,10 @@ public class HandSignKeys {
     public static final KeyMapping SIGN_8 = new KeyMapping("key.narutomod.sign_8", GLFW.GLFW_KEY_F, CATEGORY);
 
     public static final KeyMapping SHARINGAN_KEY = new KeyMapping("key.naruto_mod.sharingan", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY);
-    public static final KeyMapping GENJUTSU_KEY = new KeyMapping("key.naruto_mod.genjutsu", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Y, CATEGORY); // Moved to Y to avoid conflict with SIGN_7
-
     public static final KeyMapping AMENO_KEY = new KeyMapping("key.naruto_mod.ameno", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
+
+    public static final KeyMapping GENJUTSU_MODIFIER = new KeyMapping("key.naruto_mod.genjutsu_modifier", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, CATEGORY);
+    public static final KeyMapping MENU_KEY = new KeyMapping("key.naruto_mod.menu_key", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_INSERT, CATEGORY);
 
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -42,7 +42,8 @@ public class HandSignKeys {
         event.register(SIGN_7);
         event.register(SIGN_8);
         event.register(SHARINGAN_KEY);
-        event.register(GENJUTSU_KEY);
         event.register(AMENO_KEY);
+        event.register(GENJUTSU_MODIFIER);
+        event.register(MENU_KEY);
     }
 }

@@ -22,7 +22,6 @@ public class FireballModel<T extends FireballJutsuEntity> extends EntityModel<T>
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
 
-        // The Intersecting Pillar Method - 100% solid, zero gap rendering
         partdefinition.addOrReplaceChild("main_sphere", CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F) // Core
                         .texOffs(0, 16).addBox(-3.0F, -5.0F, -3.0F, 6.0F, 10.0F, 6.0F) // Y-Pillar (Top/Bottom)
@@ -35,7 +34,6 @@ public class FireballModel<T extends FireballJutsuEntity> extends EntityModel<T>
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        // Chaotic tumbling animation
         this.mainSphere.xRot = ageInTicks * 0.15F;
         this.mainSphere.yRot = ageInTicks * 0.2F;
         this.mainSphere.zRot = ageInTicks * 0.1F;

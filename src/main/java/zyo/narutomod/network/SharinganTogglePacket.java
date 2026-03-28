@@ -35,29 +35,21 @@ public class SharinganTogglePacket {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player == null) return;
-
-            // 1. UPDATE THE SERVER-SIDE CAPABILITY
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 stats.setSharinganActive(this.activate);
                 stats.setSharinganStage(this.stage);
 
-                // 2. APPLY BUFFS
                 if (this.activate) {
-                    // Stage 1-3 get Speed 1. MS/EMS (4+) get Speed 2.
                     int amplifier = (this.stage >= 4) ? 1 : 0;
-
                     player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, -1, amplifier, false, false));
                     player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, -1, amplifier, false, false));
                 } else {
                     player.removeEffect(MobEffects.MOVEMENT_SPEED);
                     player.removeEffect(MobEffects.DAMAGE_BOOST);
                 }
-
-                // 3. Keep your old HashMap system updated for the Dodge Logic to see
                 ServerEvents.activeSharingans.put(player.getUUID(), this.activate);
                 ServerEvents.sharinganStages.put(player.getUUID(), this.stage);
 
-                // 4. SYNC TO EVERYONE NEARBY
                 PacketHandler.INSTANCE.send(
                         PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
                         new SharinganSyncPacket(player.getUUID(), this.activate, this.stage)

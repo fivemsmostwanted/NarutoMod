@@ -1,14 +1,14 @@
 package zyo.narutomod;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.world.item.CreativeModeTabs; // Add this import
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
-import software.bernie.geckolib.GeckoLib; // IMPORTANT IMPORT
+import software.bernie.geckolib.GeckoLib;
 
 @Mod(NarutoMod.MODID)
 public class NarutoMod {
@@ -18,7 +18,6 @@ public class NarutoMod {
     public NarutoMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // INITIALIZE GECKOLIB - Do not remove this!
         GeckoLib.initialize();
 
         modEventBus.addListener(this::commonSetup);
@@ -36,9 +35,7 @@ public class NarutoMod {
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        // If the game is building the Combat tab...
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            // ... add our Sasuke Katana to it!
             event.accept(zyo.narutomod.item.ModItems.SASUKE_KATANA);
         }
     }

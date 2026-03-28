@@ -17,12 +17,10 @@ import java.util.function.Supplier;
 public class JutsuC2SPacket {
     private final List<Integer> sequence;
 
-    // Use a List!
     public JutsuC2SPacket(List<Integer> sequence) {
         this.sequence = new ArrayList<>(sequence); // Copy it to be safe
     }
 
-    // Read the list from the buffer
     public JutsuC2SPacket(FriendlyByteBuf buf) {
         int size = buf.readVarInt();
         this.sequence = new ArrayList<>();
@@ -31,7 +29,6 @@ public class JutsuC2SPacket {
         }
     }
 
-    // Write the list to the buffer
     public void encode(FriendlyByteBuf buf) {
         buf.writeVarInt(this.sequence.size());
         for (Integer sign : this.sequence) {
@@ -56,8 +53,6 @@ public class JutsuC2SPacket {
 
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (stats.getChakra() >= castingJutsu.chakra_cost) {
-
-                    // Deduct the Chakra!
                     float newChakra = stats.getChakra() - castingJutsu.chakra_cost;
                     stats.setChakra(newChakra);
 

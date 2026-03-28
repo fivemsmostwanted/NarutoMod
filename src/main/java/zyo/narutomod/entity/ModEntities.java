@@ -24,4 +24,17 @@ public class ModEntities {
                     .clientTrackingRange(8) // Tells the game to sync position up to 8 blocks away
                     .updateInterval(2)      // Sends a movement update every 2 ticks (10 times a second)
                     .build("substitution_log"));
+
+    public static final RegistryObject<EntityType<CrowCloneEntity>> CROW_CLONE = ENTITIES.register("crow_clone",
+            () -> EntityType.Builder.<CrowCloneEntity>of(CrowCloneEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.8F)
+                    .clientTrackingRange(8)
+                    .build("crow_clone"));
+
+    public static final RegistryObject<EntityType<ShacklingStakeEntity>> SHACKLING_STAKE = ENTITIES.register("shackling_stake",
+            () -> EntityType.Builder.<ShacklingStakeEntity>of(ShacklingStakeEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 2.0F)
+                    .clientTrackingRange(10)
+                    .updateInterval(20)
+                    .build("shackling_stake"));
 }

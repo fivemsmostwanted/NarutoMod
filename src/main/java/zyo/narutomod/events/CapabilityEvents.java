@@ -14,25 +14,27 @@ import zyo.narutomod.capability.ShinobiDataProvider;
 
 public class CapabilityEvents {
 
-    // 1. REGISTER THE CAPABILITY (Runs on the MOD bus)
     @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModBusEvents {
         @SubscribeEvent
         public static void registerCaps(RegisterCapabilitiesEvent event) {
             event.register(ShinobiData.class);
         }
+
+        @SubscribeEvent
+        public static void entityAttributeEvent(net.minecraftforge.event.entity.EntityAttributeCreationEvent event) {
+            event.put(zyo.narutomod.entity.ModEntities.CROW_CLONE.get(),
+                    zyo.narutomod.entity.CrowCloneEntity.createAttributes().build());
+        }
     }
 
-    // 2. ATTACH TO PLAYER & HANDLE DEATH (Runs on the FORGE bus)
     @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class ForgeBusEvents {
 
         @SubscribeEvent
         public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
-            // Only attach to Players
             if (event.getObject() instanceof Player) {
                 if (!event.getObject().getCapability(ShinobiDataProvider.SHINOBI_DATA).isPresent()) {
-                    // Give them their Chakra and Sharingan data!
                     event.addCapability(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "shinobi_properties"), new ShinobiDataProvider());
                 }
             }
@@ -40,7 +42,6 @@ public class CapabilityEvents {
 
         @SubscribeEvent
         public static void onPlayerCloned(PlayerEvent.Clone event) {
-            // If the player dies, copy their old data into their new respawned body
             if (event.isWasDeath()) {
                 event.getOriginal().getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(oldStore -> {
                     event.getEntity().getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(newStore -> {

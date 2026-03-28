@@ -24,6 +24,9 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+
+            args '-mixin.config=mixins.narutomod.json'
+
             mods {
                 "${mod_id}" {
                     source sourceSets.main
@@ -37,7 +40,6 @@ minecraft {
 
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
         }
     }
 }
@@ -49,7 +51,6 @@ repositories {
         name = "KosmX's maven"
         url = 'https://maven.kosmx.dev/'
     }
-    // Add GeckoLib repository
     maven {
         name = "GeckoLib"
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
@@ -59,10 +60,10 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Modern Animation Library
-    implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20")
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-    // GeckoLib for complex Bedrock models
+    // Your existing animation and gecko libraries
+    implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20")
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.4.4")
 }
 

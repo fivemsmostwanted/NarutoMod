@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import zyo.narutomod.NarutoMod;
 import zyo.narutomod.client.model.SubstitutionLogModel;
-import zyo.narutomod.entity.SubstitutionLogEntity;
 
 public class SubstitutionLogRenderer extends EntityRenderer<SubstitutionLogEntity> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/entity/substitution_log.png");
@@ -25,8 +24,6 @@ public class SubstitutionLogRenderer extends EntityRenderer<SubstitutionLogEntit
         poseStack.pushPose();
 
         poseStack.translate(0.0D, -0.8D, 0.0D);
-
-        // Match fireball style: setup animation and render with vertex consumer
         this.model.setupAnim(entity, 0.0F, 0.0F, entity.tickCount + partialTicks, 0.0F, 0.0F);
         VertexConsumer vertexConsumer = buffer.getBuffer(this.model.renderType(this.getTextureLocation(entity)));
         this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);

@@ -12,8 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ShinobiDataProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-
-    // This is the "Key" we use to access the data later
+    // key for access
     public static Capability<ShinobiData> SHINOBI_DATA = CapabilityManager.get(new CapabilityToken<ShinobiData>() { });
 
     private ShinobiData shinobiData = null;

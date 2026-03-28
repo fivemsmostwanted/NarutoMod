@@ -15,6 +15,8 @@ import zyo.narutomod.NarutoMod;
 
 import java.util.function.Consumer;
 
+
+// this is all fucked up.
 public class SasukeKatanaItem extends SwordItem implements GeoItem {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 

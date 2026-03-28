@@ -17,10 +17,10 @@ import zyo.narutomod.NarutoMod;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+
+//Not sure if this will ever have a use case
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class PlayerAnimManager {
-
-    // Tracks the animation layer attached to each specific player
     private static final Map<AbstractClientPlayer, ModifierLayer<IAnimation>> ANIMATION_LAYERS = new IdentityHashMap<>();
 
     @SubscribeEvent
@@ -49,7 +49,7 @@ public class PlayerAnimManager {
     public static void stopAnimation(AbstractClientPlayer player) {
         ModifierLayer<IAnimation> layer = ANIMATION_LAYERS.get(player);
         if (layer != null) {
-            layer.setAnimation(null); // Setting it to null cleanly returns control to vanilla walking/running
+            layer.setAnimation(null);
         }
     }
 }

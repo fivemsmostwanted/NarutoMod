@@ -30,8 +30,10 @@ public class SharinganEyeLayer extends RenderLayer<AbstractClientPlayer, PlayerM
 
     @Override
     public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, AbstractClientPlayer player, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
+        if (player.isInvisible()) {
+            return;
+        }
 
-        // CHECK UUID OF THE PLAYER BEING RENDERED
         boolean hasSharingan = ModClientEvents.activeSharingans.getOrDefault(player.getUUID(), false);
 
         if (!hasSharingan) {

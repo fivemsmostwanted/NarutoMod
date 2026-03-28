@@ -1,9 +1,7 @@
 package zyo.narutomod.network;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import zyo.narutomod.capability.ShinobiDataProvider;
 
 import java.util.function.Supplier;
 
@@ -30,7 +28,6 @@ public class SyncChakraPacket {
                     stats.setChakra(this.chakra);
                 });
 
-                // NEW: The Jutsu was successful! Clear the hand signs automatically.
                 zyo.narutomod.logic.HandSignManager.currentSequence.clear();
             }
         });

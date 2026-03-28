@@ -36,40 +36,28 @@ public class TsukuyomiPacket {
                     Optional<Vec3> hit = entityBB.clip(eyePos, reachVec);
 
                     if (hit.isPresent()) {
-                        // --- STAT BASED CALCULATION ---
                         caster.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(cStats -> {
                             int attackerGen = cStats.getGenjutsuStat();
-
-                            // Get Victim Genjutsu (0 if not a player)
                             int victimGen = 0;
                             if (target instanceof ServerPlayer vPlayer) {
                                 victimGen = vPlayer.getCapability(ShinobiDataProvider.SHINOBI_DATA)
                                         .map(s -> s.getGenjutsuStat()).orElse(0);
                             }
 
-                            // A. Success Chance: Base 75%. +/- 5% per point difference.
                             float successChance = 0.75f + ((attackerGen - victimGen) * 0.05f);
 
                             if (Math.random() < successChance) {
-                                // B. Efficiency: Duration scales with Attacker Genjutsu
-                                // Base 5s (100 ticks) + 0.5s (10 ticks) per point
                                 int duration = 100 + (attackerGen * 10);
 
-                                // C. Damage: Mental damage to health
                                 float mentalDamage = 2.0f + (attackerGen * 0.5f);
                                 target.hurt(caster.damageSources().magic(), mentalDamage);
 
-                                // Apply Effects
                                 target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, duration, 255, false, false));
                                 target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, duration, 1, false, false));
 
-                                // Tag the victim so the server can track the Genjutsu
                                 target.getPersistentData().putBoolean("TsukuyomiTrapped", true);
-
-                                // Sync Visuals to Caster
                                 PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> caster), new TsukuyomiSyncPacket(target.getId(), true));
 
-                                // Schedule the end of the visual cross
                                 caster.getServer().tell(new net.minecraft.server.TickTask(caster.getServer().getTickCount() + duration, () -> {
                                     if (caster.connection != null) {
                                         PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> caster), new TsukuyomiSyncPacket(target.getId(), false));

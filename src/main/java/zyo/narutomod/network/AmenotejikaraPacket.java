@@ -29,23 +29,19 @@ public class AmenotejikaraPacket {
             Vec3 lookVec = player.getLookAngle();
             Vec3 reachVec = eyePos.add(lookVec.scale(range));
 
-            // 1. Check for ENTITIES first (Includes Jutsus, Items, Mobs)
             EntityHitResult entityHit = getEntityHitResult(player, eyePos, reachVec);
-
             if (entityHit != null) {
                 Entity target = entityHit.getEntity();
                 Vec3 playerPos = player.position();
                 Vec3 targetPos = target.position();
 
-                // SWAP PLACES
                 player.teleportTo(targetPos.x, targetPos.y, targetPos.z);
                 target.teleportTo(playerPos.x, playerPos.y, playerPos.z);
 
                 playAmenoEffects(player.serverLevel(), playerPos, targetPos);
-                return; // Exit once swapped
+                return;
             }
 
-            // 2. Check for BLOCKS (Like your pumpkins!)
             BlockHitResult blockHit = player.level().clip(new net.minecraft.world.level.ClipContext(
                     eyePos, reachVec, net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
 
@@ -53,22 +49,12 @@ public class AmenotejikaraPacket {
                 net.minecraft.core.BlockPos targetPos = blockHit.getBlockPos();
                 net.minecraft.core.BlockPos playerPos = player.blockPosition();
 
-                // Get the block we are looking at
                 net.minecraft.world.level.block.state.BlockState targetState = player.level().getBlockState(targetPos);
 
-                // We don't want to swap with Bedrock or Air
                 if (!targetState.isAir() && targetState.getDestroySpeed(player.level(), targetPos) >= 0) {
-
-                    // SWAP LOGIC:
-                    // A. Remove block from target location
                     player.level().setBlock(targetPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-
-                    // B. Move player to target location
                     player.teleportTo(targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5);
-
-                    // C. Place that block at the player's old location
                     player.level().setBlock(playerPos, targetState, 3);
-
                     playAmenoEffects(player.serverLevel(), Vec3.atCenterOf(playerPos), Vec3.atCenterOf(targetPos));
                 }
             }
@@ -76,14 +62,12 @@ public class AmenotejikaraPacket {
         context.setPacketHandled(true);
     }
 
-    // UPDATED: This now looks for ALL entities (Jutsus, Items, Projectiles)
     private EntityHitResult getEntityHitResult(ServerPlayer player, Vec3 start, Vec3 end) {
         AABB aabb = player.getBoundingBox().expandTowards(player.getLookAngle().scale(30.0)).inflate(2.0D);
         Entity closestEntity = null;
         double closestDist = Double.MAX_VALUE;
 
         for (Entity entity : player.level().getEntities(player, aabb)) {
-            // Check if it's a mob, an item on the ground, or a projectile (Fireball)
             if (entity instanceof net.minecraft.world.entity.LivingEntity ||
                     entity instanceof net.minecraft.world.entity.item.ItemEntity ||
                     entity instanceof net.minecraft.world.entity.projectile.Projectile) {
@@ -104,7 +88,6 @@ public class AmenotejikaraPacket {
     }
 
     private void playAmenoEffects(ServerLevel level, Vec3 pos1, Vec3 pos2) {
-        // Play the Enderman teleport sound at both locations
         level.playSound(null, pos1.x, pos1.y, pos1.z, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
         level.playSound(null, pos2.x, pos2.y, pos2.z, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
 

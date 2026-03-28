@@ -11,7 +11,6 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, NarutoMod.MODID);
 
-    // We changed this to point to the "sasuke_katana" ID and use our new GeckoLib class
     public static final RegistryObject<Item> SASUKE_KATANA = ITEMS.register("sasuke_katana",
             () -> new SasukeKatanaItem());
 

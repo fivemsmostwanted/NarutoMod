@@ -20,12 +20,8 @@ public class TsukuyomiCrossModel<T extends LivingEntity> extends EntityModel<T> 
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
-
-        // The tall vertical piece of the cross
         partdefinition.addOrReplaceChild("verticalBeam", CubeListBuilder.create().texOffs(0, 0)
                 .addBox(-4.0F, -24.0F, 0.0F, 8.0F, 48.0F, 8.0F), PartPose.offset(0.0F, 0.0F, 4.0F));
-
-        // The horizontal piece where the arms go
         partdefinition.addOrReplaceChild("horizontalBeam", CubeListBuilder.create().texOffs(0, 0)
                 .addBox(-20.0F, -12.0F, 0.0F, 40.0F, 8.0F, 8.0F), PartPose.offset(0.0F, 0.0F, 4.0F));
 

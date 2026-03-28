@@ -38,8 +38,13 @@ public class JutsuActions {
             double oldY = player.getY();
             double oldZ = player.getZ();
 
-            Vec3 look = player.getLookAngle();
-            player.teleportTo(oldX + (look.x * 5), oldY, oldZ + (look.z * 5));
+            double radius = 5.0 + (Math.random() * 3.0);
+            double angle = Math.random() * Math.PI * 2;
+
+            double newX = oldX + (Math.cos(angle) * radius);
+            double newZ = oldZ + (Math.sin(angle) * radius);
+
+            player.teleportTo(newX, oldY, newZ);
 
             SubstitutionLogEntity log = new SubstitutionLogEntity(ModEntities.SUBSTITUTION_LOG.get(), player.level());
             log.moveTo(oldX, oldY, oldZ, player.getYRot(), 0);
@@ -50,6 +55,10 @@ public class JutsuActions {
             if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
                 serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF,
                         oldX, oldY + 1, oldZ, 15, 0.2, 0.5, 0.2, 0.05);
+
+                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF,
+                        newX, oldY + 1, newZ, 15, 0.2, 0.5, 0.2, 0.05);
+
                 player.level().playSound(null, player.blockPosition(),
                         net.minecraft.sounds.SoundEvents.CHORUS_FRUIT_TELEPORT,
                         net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);

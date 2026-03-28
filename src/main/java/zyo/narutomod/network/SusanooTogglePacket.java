@@ -23,7 +23,7 @@ public class SusanooTogglePacket {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player == null) return;
-            
+
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (!stats.isSharinganActive() || stats.getSharinganStage() < 4) {
                     player.displayClientMessage(Component.literal("§cYou need the Mangekyo Sharingan to cast Susanoo!"), true);

@@ -32,6 +32,7 @@ public class ClientModEvents {
         event.registerLayerDefinition(TSUKUYOMI_CROSS_LAYER, zyo.narutomod.entity.TsukuyomiCrossModel::createBodyLayer);
         event.registerLayerDefinition(SubstitutionLogModel.LAYER_LOCATION, SubstitutionLogModel::createBodyLayer);
         event.registerLayerDefinition(zyo.narutomod.client.model.ShacklingStakeModel.LAYER_LOCATION, zyo.narutomod.client.model.ShacklingStakeModel::createBodyLayer);
+        event.registerLayerDefinition(zyo.narutomod.client.model.AkatsukiCloakModel.LAYER_LOCATION, zyo.narutomod.client.model.AkatsukiCloakModel::createLayer);
     }
 
     @SubscribeEvent

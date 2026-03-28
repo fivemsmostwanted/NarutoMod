@@ -39,6 +39,7 @@ public class NarutoMod {
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
             event.accept(zyo.narutomod.item.ModItems.SASUKE_KATANA);
+            event.accept(zyo.narutomod.item.ModItems.AKATSUKI_CLOAK.get());
         }
     }
 }

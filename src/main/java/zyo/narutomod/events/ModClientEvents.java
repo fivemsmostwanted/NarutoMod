@@ -355,23 +355,87 @@ public class ModClientEvents {
         }
     }
 
+    private static boolean renderingIllusion = false;
+
     @SubscribeEvent
     public static void onLivingRenderPost(net.minecraftforge.client.event.RenderLivingEvent.Post<?, ?> event) {
+        if (renderingIllusion) return;
+
         net.minecraft.world.entity.LivingEntity entity = event.getEntity();
         net.minecraft.client.player.LocalPlayer localPlayer = Minecraft.getInstance().player;
 
         if (localPlayer == null) return;
+
         if (entity.getPersistentData().getBoolean("TsukuyomiTrapped") &&
                 (localPlayer.getId() == entity.getId() || localPlayer.getId() == entity.getPersistentData().getInt("TsukuyomiCasterId"))) {
 
-            if (event.getRenderer().getModel() instanceof net.minecraft.client.model.HumanoidModel<?> model) {
-                model.rightArm.visible = true;
-                model.leftArm.visible = true;
+            renderingIllusion = true;
+            try {
+                com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
+                int numClones = 6;
+                double maxRadius = 8.0;
 
-                if (model instanceof net.minecraft.client.model.PlayerModel<?> pModel) {
-                    pModel.rightSleeve.visible = true;
-                    pModel.leftSleeve.visible = true;
+                @SuppressWarnings("unchecked")
+                net.minecraft.client.renderer.entity.LivingEntityRenderer<net.minecraft.world.entity.LivingEntity, net.minecraft.client.model.EntityModel<net.minecraft.world.entity.LivingEntity>> renderer =
+                        (net.minecraft.client.renderer.entity.LivingEntityRenderer) event.getRenderer();
+
+                float oldYRot = entity.getYRot();
+                float oldYRotO = entity.yRotO;
+                float oldYBodyRot = entity.yBodyRot;
+                float oldYBodyRotO = entity.yBodyRotO;
+                float oldYHeadRot = entity.yHeadRot;
+                float oldYHeadRotO = entity.yHeadRotO;
+                float oldXRot = entity.getXRot();
+                float oldXRotO = entity.xRotO;
+
+                int casterId = entity.getPersistentData().getInt("TsukuyomiCasterId");
+                net.minecraft.world.entity.Entity caster = entity.level().getEntity(casterId);
+
+                java.util.Random rand = new java.util.Random(entity.getId() * 31L);
+
+                for (int i = 0; i < numClones; i++) {
+                    double r = 2.0 + (rand.nextDouble() * maxRadius);
+                    double angle = rand.nextDouble() * Math.PI * 2;
+                    float offsetX = (float) (Math.cos(angle) * r);
+                    float offsetZ = (float) (Math.sin(angle) * r);
+
+                    float yaw = 0.0F;
+                    if (caster != null) {
+                        double cloneX = entity.getX() + offsetX;
+                        double cloneZ = entity.getZ() + offsetZ;
+                        double dX = caster.getX() - cloneX;
+                        double dZ = caster.getZ() - cloneZ;
+                        yaw = (float) Math.toDegrees(Math.atan2(dZ, dX)) - 90.0F;
+                    }
+
+                    entity.setYRot(yaw);
+                    entity.yRotO = yaw;
+                    entity.yBodyRot = yaw;
+                    entity.yBodyRotO = yaw;
+                    entity.yHeadRot = yaw;
+                    entity.yHeadRotO = yaw;
+                    entity.setXRot(0);
+                    entity.xRotO = 0;
+
+                    poseStack.pushPose();
+                    poseStack.translate(offsetX, 0.0D, offsetZ);
+
+                    renderer.render(entity, yaw, event.getPartialTick(), poseStack, event.getMultiBufferSource(), event.getPackedLight());
+
+                    poseStack.popPose();
                 }
+
+                entity.setYRot(oldYRot);
+                entity.yRotO = oldYRotO;
+                entity.yBodyRot = oldYBodyRot;
+                entity.yBodyRotO = oldYBodyRotO;
+                entity.yHeadRot = oldYHeadRot;
+                entity.yHeadRotO = oldYHeadRotO;
+                entity.setXRot(oldXRot);
+                entity.xRotO = oldXRotO;
+
+            } finally {
+                renderingIllusion = false;
             }
         }
     }

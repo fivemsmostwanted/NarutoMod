@@ -159,6 +159,10 @@ public class ModClientEvents {
             while (HandSignKeys.MENU_KEY.consumeClick()) {
                 mc.setScreen(new zyo.narutomod.client.gui.NinjaCardScreen());
             }
+
+            while (HandSignKeys.TREE_KEY.consumeClick()) {
+                mc.setScreen(new zyo.narutomod.client.gui.JutsuTreeScreen());
+            }
         }
     }
 

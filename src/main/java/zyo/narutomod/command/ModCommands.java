@@ -9,7 +9,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import zyo.narutomod.capability.ShinobiDataProvider;
-import zyo.narutomod.capability.UchihaArchetype;
+import zyo.narutomod.player.Archetype;
 
 public class ModCommands {
 
@@ -54,14 +54,14 @@ public class ModCommands {
 
         try {
             ServerPlayer player = source.getPlayerOrException();
-            UchihaArchetype archetype = UchihaArchetype.valueOf(typeString);
+            Archetype archetype = Archetype.valueOf(typeString);
 
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 stats.setArchetype(archetype);
                 source.sendSuccess(() -> Component.literal("§aSuccessfully set archetype to: " + archetype.name()), false);
             });
         } catch (IllegalArgumentException e) {
-            source.sendFailure(Component.literal("Invalid archetype. Use: ILLUSIONIST, DESTROYER, or NONE"));
+            source.sendFailure(Component.literal("Invalid archetype. Check Archetype.java for valid names (e.g., ILLUSIONIST, BRAWLER, NONE)."));
         } catch (Exception e) {}
         return 1;
     }
@@ -96,7 +96,6 @@ public class ModCommands {
             ServerPlayer player = source.getPlayerOrException();
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 stats.setSharinganStage(stage);
-
                 zyo.narutomod.events.ServerEvents.sharinganStages.put(player.getUUID(), stage);
 
                 zyo.narutomod.network.PacketHandler.INSTANCE.send(

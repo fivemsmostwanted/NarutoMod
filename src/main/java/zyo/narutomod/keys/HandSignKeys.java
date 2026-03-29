@@ -33,6 +33,13 @@ public class HandSignKeys {
 
     public static final KeyMapping MENU_KEY = new KeyMapping("key.naruto_mod.menu_key", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_INSERT, CATEGORY);
 
+    public static final net.minecraft.client.KeyMapping TREE_KEY = new net.minecraft.client.KeyMapping(
+            "key.narutomod.skill_tree",
+            com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM,
+            org.lwjgl.glfw.GLFW.GLFW_KEY_K,
+            "key.categories.narutomod"
+    );
+
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(CHARGE_KEY);
@@ -49,5 +56,6 @@ public class HandSignKeys {
         event.register(GENJUTSU_MODIFIER);
         event.register(SUSANOO_TIER_KEY);
         event.register(MENU_KEY);
+        event.register(TREE_KEY);
     }
 }

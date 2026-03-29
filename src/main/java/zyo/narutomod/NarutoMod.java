@@ -21,6 +21,7 @@ public class NarutoMod {
 
     public NarutoMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, zyo.narutomod.config.NarutoConfig.SPEC);
         GeckoLib.initialize();
 
         modEventBus.addListener(this::commonSetup);

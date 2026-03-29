@@ -46,12 +46,30 @@ public class JutsuC2SPacket {
                     .orElse(null);
 
             if (castingJutsu != null) {
+                net.minecraft.resources.ResourceLocation jutsuKey = JutsuManager.LOADED_JUTSUS.entrySet().stream()
+                        .filter(entry -> entry.getValue() == castingJutsu)
+                        .map(java.util.Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(null);
+
                 player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                    if (jutsuKey != null && zyo.narutomod.jutsu.JutsuTreeManager.ALL_NODES.containsKey(jutsuKey)) {
+                        if (!stats.hasJutsu(jutsuKey.toString())) {
+                            player.displayClientMessage(Component.literal("§cYou haven't learned this Jutsu yet!"), true);
+                            player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_FAIL.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                            zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                                    net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                    new ClearHandSignsPacket()
+                            );
+                            return;
+                        }
+                    }
+
                     if (stats.getChakra() >= castingJutsu.chakra_cost) {
                         float newChakra = stats.getChakra() - castingJutsu.chakra_cost;
                         stats.setChakra(newChakra);
 
-                        PacketHandler.INSTANCE.send(
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
                                 net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                                 new SyncChakraPacket(newChakra)
                         );
@@ -61,7 +79,7 @@ public class JutsuC2SPacket {
 
                         zyo.narutomod.jutsu.JutsuActions.execute(castingJutsu.id, player);
 
-                        PacketHandler.INSTANCE.send(
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
                                 net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                                 new ClearHandSignsPacket()
                         );
@@ -69,7 +87,7 @@ public class JutsuC2SPacket {
                         player.displayClientMessage(Component.literal("§cNot enough Chakra! You need " + castingJutsu.chakra_cost), true);
                         player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_FAIL.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
 
-                        PacketHandler.INSTANCE.send(
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
                                 net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                                 new ClearHandSignsPacket()
                         );
@@ -84,7 +102,7 @@ public class JutsuC2SPacket {
                     player.displayClientMessage(Component.literal("§cInvalid Hand Sign sequence!"), true);
                     player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_FAIL.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
 
-                    PacketHandler.INSTANCE.send(
+                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
                             net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                             new ClearHandSignsPacket()
                     );

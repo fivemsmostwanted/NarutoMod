@@ -32,5 +32,10 @@ public class PacketHandler {
         INSTANCE.registerMessage(id++, SyncStatsPacket.class, SyncStatsPacket::encode, SyncStatsPacket::new, SyncStatsPacket::handle);
         INSTANCE.registerMessage(id++, SusanooTierPacket.class, SusanooTierPacket::encode, SusanooTierPacket::new, SusanooTierPacket::handle);
         INSTANCE.registerMessage(id++, SusanooTogglePacket.class, SusanooTogglePacket::encode, SusanooTogglePacket::new, SusanooTogglePacket::handle);
+        INSTANCE.registerMessage(id++, zyo.narutomod.network.UnlockJutsuPacket.class, zyo.narutomod.network.UnlockJutsuPacket::encode, zyo.narutomod.network.UnlockJutsuPacket::new, zyo.narutomod.network.UnlockJutsuPacket::handle);
+        INSTANCE.registerMessage(id++, zyo.narutomod.network.SyncUnlockedJutsusPacket.class, zyo.narutomod.network.SyncUnlockedJutsusPacket::encode, zyo.narutomod.network.SyncUnlockedJutsusPacket::new, zyo.narutomod.network.SyncUnlockedJutsusPacket::handle);
+        INSTANCE.registerMessage(id++, zyo.narutomod.network.OpenSetupScreenPacket.class, zyo.narutomod.network.OpenSetupScreenPacket::encode, zyo.narutomod.network.OpenSetupScreenPacket::new, zyo.narutomod.network.OpenSetupScreenPacket::handle);
+        INSTANCE.registerMessage(id++, zyo.narutomod.network.SetPlayerFactionPacket.class, zyo.narutomod.network.SetPlayerFactionPacket::encode, zyo.narutomod.network.SetPlayerFactionPacket::new, zyo.narutomod.network.SetPlayerFactionPacket::handle);
+        INSTANCE.registerMessage(id++, zyo.narutomod.network.SyncFactionPacket.class, zyo.narutomod.network.SyncFactionPacket::encode, zyo.narutomod.network.SyncFactionPacket::new, zyo.narutomod.network.SyncFactionPacket::handle);
     }
 }

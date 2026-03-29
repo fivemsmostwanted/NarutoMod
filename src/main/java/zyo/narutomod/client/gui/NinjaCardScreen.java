@@ -134,9 +134,21 @@ public class NinjaCardScreen extends Screen {
     }
 
     private void renderInfoTextValues(GuiGraphics graphics) {
-        graphics.drawString(this.font, ": Hidden Leaf", this.leftPos + 40, this.topPos + 93, 0x000000, false);
-        graphics.drawString(this.font, ": Genin", this.leftPos + 35, this.topPos + 116, 0x000000, false);
-        graphics.drawString(this.font, ": Uchiha", this.leftPos + 35, this.topPos + 140, 0x000000, false);
+        if (this.minecraft.player == null) return;
+
+        this.minecraft.player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+            String villageName = stats.getVillage().getDisplayName();
+            String clanName = stats.getClan().getDisplayName();
+            String archetype = stats.getArchetype().getDisplayName();
+
+            String playerName = this.minecraft.player.getName().getString();
+
+            graphics.drawString(this.font, ": " + villageName, this.leftPos + 40, this.topPos + 93, 0x000000, false);
+            graphics.drawString(this.font, ": " + archetype, this.leftPos + 35, this.topPos + 116, 0x000000, false);
+            graphics.drawString(this.font, ": " + clanName, this.leftPos + 35, this.topPos + 140, 0x000000, false);
+
+            graphics.drawString(this.font, playerName, this.leftPos + 45 - (this.font.width(playerName) / 2), this.topPos + 10, 0x000000, false);
+        });
     }
 
     @Override

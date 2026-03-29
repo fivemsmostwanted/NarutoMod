@@ -1,0 +1,9 @@
+{
+  "id": 4,
+  "nature": "yin",
+  "type": "genjutsu",
+  "name": "Shackling Stakes",
+  "chakra_cost": 45.0,
+  "xp_cost": 12,
+  "hand_signs": [1, 3, 1]
+}

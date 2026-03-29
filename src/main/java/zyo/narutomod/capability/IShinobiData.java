@@ -1,6 +1,12 @@
 package zyo.narutomod.capability;
 
+import zyo.narutomod.player.Clan;
+import zyo.narutomod.player.Archetype;
+import zyo.narutomod.player.Village;
+
 public interface IShinobiData {
+    java.util.List<String> getUnlockedJutsus();
+
     float getChakra();
     float getMaxChakra();
     void setChakra(float chakra);
@@ -23,8 +29,17 @@ public interface IShinobiData {
     boolean isCloneInfusionReady();
     void setCloneInfusionReady(boolean ready);
 
-    UchihaArchetype getArchetype();
-    void setArchetype(UchihaArchetype archetype);
+    Clan getClan();
+    void setClan(Clan clan);
+
+    Archetype getArchetype();
+    void setArchetype(Archetype archetype);
+
+    Village getVillage();
+    void setVillage(Village village);
+
+    void unlockJutsu(String jutsuId);
+    boolean hasJutsu(String jutsuId);
 
     void copyFrom(IShinobiData source);
 }

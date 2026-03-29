@@ -4,5 +4,6 @@
   "type": "ninjutsu",
   "name": "Substitution Jutsu",
   "chakra_cost": 10.0,
-  "hand_signs": [1, 2, 2]
+  "hand_signs": [1, 2, 2],
+  "xp_cost": 2
 }

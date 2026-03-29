@@ -9,6 +9,7 @@ import net.minecraftforge.network.PacketDistributor;
 import zyo.narutomod.NarutoMod;
 import zyo.narutomod.network.PacketHandler;
 import zyo.narutomod.network.SharinganSyncPacket;
+import zyo.narutomod.player.Archetype;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,9 +43,41 @@ public class ServerEvents {
 
             if (player.getPersistentData().getBoolean("TsukuyomiTrapped")) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                    // Genjutsu resistance logic
+                    // TODO: Genjutsu resistance logic
                 });
             }
+
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (stats.getClan() == zyo.narutomod.player.Clan.UCHIHA && stats.getSharinganStage() == 0) {
+                    int uchihaTicks = player.getPersistentData().getInt("UchihaTicks");
+                    uchihaTicks++;
+                    player.getPersistentData().putInt("UchihaTicks", uchihaTicks);
+
+                    if (uchihaTicks >= 7200) {
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, 100, 0, false, false));
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.CONFUSION, 200, 0, false, false));
+
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYour eyes feel different..."), true);
+                        player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ELDER_GUARDIAN_CURSE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                        stats.setSharinganStage(1);
+                        stats.unlockJutsu("narutomod:sharingan_root");
+                        stats.setSharinganActive(true);
+
+                        activeSharingans.put(player.getUUID(), true);
+                        sharinganStages.put(player.getUUID(), 1);
+
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new zyo.narutomod.network.SharinganSyncPacket(player.getUUID(), true, 1)
+                        );
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
+                        );
+                    }
+                }
+            });
 
             if (player.tickCount % 20 == 0) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
@@ -70,7 +103,7 @@ public class ServerEvents {
                             default -> 4.0f;
                         };
 
-                        if (stats.getArchetype() == zyo.narutomod.capability.UchihaArchetype.DESTROYER) {
+                        if(stats.getArchetype() == Archetype.DESTROYER) {
                             baseDrain *= 1.5f;
                         }
 
@@ -164,6 +197,19 @@ public class ServerEvents {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (stats.getClan() == zyo.narutomod.player.Clan.CLANLESS && stats.getVillage() == zyo.narutomod.player.Village.NONE) {
+                    zyo.narutomod.config.NarutoConfig.SelectionMode mode = zyo.narutomod.config.NarutoConfig.SELECTION_MODE.get();
+
+                    if (mode == zyo.narutomod.config.NarutoConfig.SelectionMode.MENU_CHOICE) {
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new zyo.narutomod.network.OpenSetupScreenPacket()
+                        );
+                    } else if (mode == zyo.narutomod.config.NarutoConfig.SelectionMode.RANDOM_ITEM) {
+                        //TODO: build the random item!
+                    }
+                }
+
                 activeSharingans.put(player.getUUID(), stats.isSharinganActive());
                 sharinganStages.put(player.getUUID(), stats.getSharinganStage());
 
@@ -181,6 +227,16 @@ public class ServerEvents {
                         net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                         new zyo.narutomod.network.SyncChakraPacket(stats.getChakra())
                 );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
+                );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncFactionPacket(stats.getClan(), stats.getVillage())
+                );
             });
         }
     }
@@ -196,8 +252,33 @@ public class ServerEvents {
     }
 
     @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
+                );
+            });
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
+                );
+            });
+        }
+    }
+
+    @SubscribeEvent
     public static void onAddReloadListeners(net.minecraftforge.event.AddReloadListenerEvent event) {
         event.addListener(new zyo.narutomod.jutsu.JutsuManager());
         zyo.narutomod.jutsu.JutsuActions.registerAll();
+        zyo.narutomod.jutsu.JutsuTreeManager.initializeTrees();
     }
 }

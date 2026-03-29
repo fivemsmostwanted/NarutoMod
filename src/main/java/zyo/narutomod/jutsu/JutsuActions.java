@@ -10,7 +10,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 import zyo.narutomod.capability.ShinobiDataProvider;
-import zyo.narutomod.capability.UchihaArchetype;
+import zyo.narutomod.player.Archetype;
 import zyo.narutomod.entity.*;
 import zyo.narutomod.network.PacketHandler;
 
@@ -142,7 +142,7 @@ public class JutsuActions {
 
     private static void performCrowFeint(ServerPlayer player) {
         player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-            float chakraCost = stats.getArchetype() == UchihaArchetype.ILLUSIONIST ? 10.0F : 25.0F;
+            float chakraCost = stats.getArchetype() == Archetype.ILLUSIONIST ? 10.0F : 25.0F;
 
             if (stats.getChakra() >= chakraCost) {
                 stats.setChakra(stats.getChakra() - chakraCost);
@@ -169,7 +169,7 @@ public class JutsuActions {
     public static void performParalysisGenjutsu(ServerPlayer player) {
         player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
 
-            float chakraCost = stats.getArchetype() == zyo.narutomod.capability.UchihaArchetype.ILLUSIONIST ? 10.0F : 25.0F;
+            float chakraCost = stats.getArchetype() == Archetype.ILLUSIONIST ? 10.0F : 25.0F;
 
             if (stats.getChakra() >= chakraCost) {
                 double range = 15.0;

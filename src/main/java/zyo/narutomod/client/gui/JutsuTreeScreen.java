@@ -116,13 +116,26 @@ public class JutsuTreeScreen extends Screen {
         graphics.fill(x - 2, y - 2, x + NODE_SIZE + 2, y + NODE_SIZE + 2, frameColor);
         graphics.fill(x, y, x + NODE_SIZE, y + NODE_SIZE, bgColor);
 
-        ResourceLocation iconLocation = node.getCustomIcon() != null ? node.getCustomIcon() :
-                ResourceLocation.fromNamespaceAndPath(node.getJutsuId().getNamespace(), "textures/gui/jutsus/" + node.getJutsuId().getPath() + ".png");
+        ResourceLocation iconLocation;
+        boolean applyOverlay = false;
+
+        if (isUnlocked) {
+            iconLocation = node.getCustomIcon() != null ? node.getCustomIcon() :
+                    ResourceLocation.fromNamespaceAndPath(node.getJutsuId().getNamespace(), "textures/gui/jutsus/" + node.getJutsuId().getPath() + ".png");
+        } else {
+            if (node.getLockedIcon() != null) {
+                iconLocation = node.getLockedIcon();
+            } else {
+                iconLocation = node.getCustomIcon() != null ? node.getCustomIcon() :
+                        ResourceLocation.fromNamespaceAndPath(node.getJutsuId().getNamespace(), "textures/gui/jutsus/" + node.getJutsuId().getPath() + ".png");
+                applyOverlay = true;
+            }
+        }
 
         com.mojang.blaze3d.systems.RenderSystem.enableBlend();
         graphics.blit(iconLocation, x + 1, y + 1, 0, 0, NODE_SIZE - 2, NODE_SIZE - 2, NODE_SIZE - 2, NODE_SIZE - 2);
 
-        if (!isUnlocked) {
+        if (applyOverlay) {
             graphics.fill(x + 1, y + 1, x + NODE_SIZE - 1, y + NODE_SIZE - 1, 0xAA111111);
         }
 

@@ -17,12 +17,11 @@ public class JutsuTreeManager {
         ROOT_NODES.clear();
         ALL_NODES.clear();
 
-        // ==========================================
-        // 1. GENERAL JUTSUS (Available to Everyone)
-        // ==========================================
         JutsuNode substitution = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "substitution"), 0, -2)
-                .setXpCost(1)
-                .requireLevel(1);
+                .setXpCost(2)
+                .requireLevel(1)
+                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/jutsus/jutsu_substiutution_marker.png"))
+                .setLockedIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/jutsus/jutsu_substiutution.png"));
         ROOT_NODES.add(substitution);
         ALL_NODES.put(substitution.getJutsuId(), substitution);
 
@@ -32,12 +31,6 @@ public class JutsuTreeManager {
                 .requireLevel(2);
         ALL_NODES.put(cloneJutsu.getJutsuId(), cloneJutsu);
 
-
-        // ==========================================
-        // 2. UCHIHA JUTSUS (Clan Locked)
-        // ==========================================
-
-        // Fireball Jutsu (Root Node, X: 0, Y: 0)
         JutsuNode fireball = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "fireball"), 0, 0)
                 .requireClan(Clan.UCHIHA)
                 .setXpCost(3)
@@ -45,7 +38,6 @@ public class JutsuTreeManager {
         ROOT_NODES.add(fireball);
         ALL_NODES.put(fireball.getJutsuId(), fireball);
 
-        // Phoenix Flower Jutsu (Child of Fireball, X: 1, Y: 0)
         JutsuNode phoenixFlower = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "phoenix_flower_jutsu"), 1, 0)
                 .setParent(fireball)
                 .requireClan(Clan.UCHIHA)
@@ -53,17 +45,12 @@ public class JutsuTreeManager {
                 .requireLevel(3);
         ALL_NODES.put(phoenixFlower.getJutsuId(), phoenixFlower);
 
-        // ==========================================
-        // 3. DOJUTSU JUTSUS (Sharingan Evolution)
-        // ==========================================
-
-        // Sharingan Base (Root Node, X: 0, Y: 2)
-        // Visible at Stage 0, uses the 3 Tomoe texture but remains grayed out!
         JutsuNode sharinganRoot = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "sharingan_root"), 0, 2)
                 .requireClan(Clan.UCHIHA)
                 .requireSharingan(0)
                 .setXpCost(999)
-                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_locked.png"));
+                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_1.png"))
+                .setLockedIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_locked.png"));
         ROOT_NODES.add(sharinganRoot);
         ALL_NODES.put(sharinganRoot.getJutsuId(), sharinganRoot);
 
@@ -83,7 +70,6 @@ public class JutsuTreeManager {
                 .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_3.png"));
         ALL_NODES.put(sharingan3.getJutsuId(), sharingan3);
 
-        // --- Genjutsu Branches (Branching off 3 Tomoe!) ---
         JutsuNode crowClone = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "crow_clone_feint"), 3, 1)
                 .setParent(sharingan3)
                 .requireClan(Clan.UCHIHA)

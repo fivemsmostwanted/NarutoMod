@@ -21,7 +21,17 @@ public class JutsuNode {
     private int xpCost = 1;
 
     private int requiredSharinganStage = 0;
+    private ResourceLocation lockedIcon = null;
     private ResourceLocation customIcon = null;
+
+    public JutsuNode setLockedIcon(ResourceLocation icon) {
+        this.lockedIcon = icon;
+        return this;
+    }
+
+    public ResourceLocation getLockedIcon() {
+        return lockedIcon;
+    }
 
     public JutsuNode setXpCost(int levels) {
         this.xpCost = levels;

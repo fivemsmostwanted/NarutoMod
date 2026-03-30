@@ -25,11 +25,11 @@ public class ModEntities {
                     .updateInterval(2)
                     .build("substitution_log"));
 
-    public static final RegistryObject<EntityType<CrowCloneEntity>> CROW_CLONE = ENTITIES.register("crow_clone",
+    public static final RegistryObject<EntityType<CrowCloneEntity>> SHADOW_CLONE = ENTITIES.register("shadow_clone",
             () -> EntityType.Builder.<CrowCloneEntity>of(CrowCloneEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F)
                     .clientTrackingRange(8)
-                    .build("crow_clone"));
+                    .build("shadow_clone"));
 
     public static final RegistryObject<EntityType<ShacklingStakeEntity>> SHACKLING_STAKE = ENTITIES.register("shackling_stake",
             () -> EntityType.Builder.<ShacklingStakeEntity>of(ShacklingStakeEntity::new, MobCategory.MISC)

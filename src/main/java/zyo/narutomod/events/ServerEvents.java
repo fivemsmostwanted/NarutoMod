@@ -155,6 +155,7 @@ public class ServerEvents {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
             if (event.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
 
+            if (event.getSource().getEntity() == player) return;
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (stats.isSharinganActive()) {
                     float dodgeChance = stats.getSharinganStage() * 0.10f;
@@ -252,12 +253,49 @@ public class ServerEvents {
     }
 
     @SubscribeEvent
+    public static void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
+        event.getOriginal().reviveCaps();
+
+        event.getOriginal().getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(oldStats -> {
+            event.getEntity().getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(newStats -> {
+                newStats.copyFrom(oldStats);
+            });
+        });
+        event.getOriginal().invalidateCaps();
+    }
+
+    @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 PacketHandler.INSTANCE.send(
                         PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncStatsPacket(stats.getNinjutsuStat(), stats.getGenjutsuStat())
+                );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
                         new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
+                );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncFactionPacket(stats.getClan(), stats.getVillage())
+                );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new zyo.narutomod.network.SyncChakraPacket(stats.getChakra())
+                );
+
+                if (stats.isSharinganActive()) {
+                    stats.setSharinganActive(false);
+                    activeSharingans.put(player.getUUID(), false);
+                }
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new SharinganSyncPacket(player.getUUID(), false, stats.getSharinganStage())
                 );
             });
         }

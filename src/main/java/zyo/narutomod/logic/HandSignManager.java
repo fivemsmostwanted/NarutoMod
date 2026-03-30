@@ -14,7 +14,7 @@ public class HandSignManager {
         if (inputCooldown > 0) return;
 
         currentSequence.add(signId);
-        comboTimer = 70;
+        comboTimer = 50;
         inputCooldown = 1;
 
         if (net.minecraft.client.Minecraft.getInstance().player != null) {

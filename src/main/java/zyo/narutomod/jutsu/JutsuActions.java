@@ -101,7 +101,7 @@ public class JutsuActions {
                 }
 
                 ServerLevel level = player.serverLevel();
-                CrowCloneEntity clone = ModEntities.CROW_CLONE.get().create(level);
+                CrowCloneEntity clone = ModEntities.SHADOW_CLONE.get().create(level);
 
                 if (clone != null) {
                     stats.setChakra(stats.getChakra() - baseChakraCost);
@@ -147,7 +147,7 @@ public class JutsuActions {
             if (stats.getChakra() >= chakraCost) {
                 stats.setChakra(stats.getChakra() - chakraCost);
                 ServerLevel level = player.serverLevel();
-                CrowCloneEntity clone = ModEntities.CROW_CLONE.get().create(level);
+                CrowCloneEntity clone = ModEntities.SHADOW_CLONE.get().create(level);
 
                 if (clone != null) {
                     clone.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());

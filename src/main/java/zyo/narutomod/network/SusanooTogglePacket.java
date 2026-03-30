@@ -30,6 +30,11 @@ public class SusanooTogglePacket {
                     return;
                 }
 
+                if (!stats.hasJutsu("narutomod:susanoo")) {
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou haven't unlocked the Susanoo yet!"), true);
+                    return;
+                }
+
                 Optional<Entity> existingSusanoo = player.getPassengers().stream()
                         .filter(e -> e instanceof SusanooEntity).findFirst();
 

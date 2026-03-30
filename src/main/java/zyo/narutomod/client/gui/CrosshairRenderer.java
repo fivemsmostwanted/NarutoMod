@@ -36,7 +36,7 @@ public class CrosshairRenderer {
 
         handleLockOnInput(mc);
 
-        if (lockedTarget != null && (!lockedTarget.isAlive() || lockedTarget.distanceTo(mc.player) > 40)) {
+        if (lockedTarget != null && (!lockedTarget.isAlive() || lockedTarget.distanceTo(mc.player) > 15)) {
             lockedTarget = null;
         }
 
@@ -47,7 +47,7 @@ public class CrosshairRenderer {
         if (isLocked) {
             forceCombatRotation(mc, lockedTarget);
 
-            Vec3 targetPos = lockedTarget.position().add(0, lockedTarget.getBbHeight() / 2.0, 0);
+            Vec3 targetPos = lockedTarget.position().add(0, lockedTarget.getBbHeight() * 0.6, 0);
             Vector4f screenPos = projectToScreen(targetPos, mc, width, height);
 
             if (screenPos.w() > 0) {
@@ -109,7 +109,7 @@ public class CrosshairRenderer {
 
     private static void forceCombatRotation(Minecraft mc, Entity target) {
         Vec3 playerPos = mc.player.getEyePosition(mc.getFrameTime());
-        Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2.0, 0);
+        Vec3 targetPos = target.position().add(0, target.getBbHeight() * 0.6, 0);
 
         double dX = targetPos.x - playerPos.x;
         double dY = targetPos.y - playerPos.y;
@@ -125,8 +125,8 @@ public class CrosshairRenderer {
         float yawDiff = Mth.wrapDegrees(targetYaw - currentYaw);
         float pitchDiff = Mth.wrapDegrees(targetPitch - currentPitch);
 
-        mc.player.setYRot(currentYaw + yawDiff * 0.15f);
-        mc.player.setXRot(currentPitch + pitchDiff * 0.15f);
+        mc.player.setYRot(currentYaw + yawDiff * 0.08f);
+        mc.player.setXRot(currentPitch + pitchDiff * 0.08f);
     }
 
     private static void handleLockOnInput(Minecraft mc) {

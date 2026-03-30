@@ -17,12 +17,23 @@ public class JutsuNode {
 
     private Clan requiredClan = Clan.CLANLESS;
     private Village requiredVillage = Village.NONE;
-    private int requiredNinjutsuLevel = 1;
+    private int requiredNinjutsuLevel = 0;
+    private int requiredGenjutsuLevel = 0;
     private int xpCost = 1;
 
     private int requiredSharinganStage = 0;
     private ResourceLocation lockedIcon = null;
     private ResourceLocation customIcon = null;
+
+    public JutsuNode requireNinjutsuLevel(int level) {
+        this.requiredNinjutsuLevel = level;
+        return this;
+    }
+
+    public JutsuNode requireGenjutsuLevel(int level) {
+        this.requiredGenjutsuLevel = level;
+        return this;
+    }
 
     public JutsuNode setLockedIcon(ResourceLocation icon) {
         this.lockedIcon = icon;
@@ -63,11 +74,6 @@ public class JutsuNode {
         return this;
     }
 
-    public JutsuNode requireLevel(int level) {
-        this.requiredNinjutsuLevel = level;
-        return this;
-    }
-
     public JutsuNode requireSharingan(int stage) {
         this.requiredSharinganStage = stage;
         return this;
@@ -88,4 +94,5 @@ public class JutsuNode {
     public Clan getRequiredClan() { return requiredClan; }
     public Village getRequiredVillage() { return requiredVillage; }
     public int getRequiredNinjutsuLevel() { return requiredNinjutsuLevel; }
+    public int getRequiredGenjutsuLevel() { return requiredGenjutsuLevel; }
 }

@@ -5,9 +5,13 @@ import zyo.narutomod.player.Clan;
 import zyo.narutomod.player.Archetype;
 import zyo.narutomod.player.Village;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ShinobiData implements IShinobiData {
     private float chakra = 100.0f;
     private int sharinganStage = 0;
+    private String msVariant = "none";
     private boolean sharinganActive = false;
     private boolean inKamui = false;
     private boolean cloneInfusionReady = false;
@@ -15,6 +19,7 @@ public class ShinobiData implements IShinobiData {
     private int ninjutsuStat = 1;
     private int genjutsuStat = 1;
 
+    private final Map<String, Integer> natureMastery = new HashMap<>();
     private final java.util.List<String> unlockedJutsus = new java.util.ArrayList<>();
     private Clan clan = Clan.CLANLESS;
     private Archetype archetype = Archetype.NONE;
@@ -26,6 +31,9 @@ public class ShinobiData implements IShinobiData {
     @Override public void setSharinganStage(int stage) { this.sharinganStage = stage; }
     @Override public boolean isInKamuiDimension() { return inKamui; }
     @Override public void setInKamuiDimension(boolean inDimension) { this.inKamui = inDimension; }
+    
+    @Override public String getMsVariant() { return msVariant; }
+    @Override public void setMsVariant(String variant) { this.msVariant = variant; }
 
     @Override public boolean isSharinganActive() { return sharinganActive; }
     @Override public void setSharinganActive(boolean active) { this.sharinganActive = active; }
@@ -76,10 +84,24 @@ public class ShinobiData implements IShinobiData {
     }
 
     @Override
+    public int getNatureMastery(String nature) {
+        if (nature == null) return 0;
+        return natureMastery.getOrDefault(nature.toLowerCase(), 0);
+    }
+
+    @Override
+    public void addNatureMastery(String nature, int amount) {
+        if (nature == null) return;
+        String key = nature.toLowerCase();
+        natureMastery.put(key, getNatureMastery(key) + amount);
+    }
+
+    @Override
     public void copyFrom(IShinobiData source) {
         this.chakra = source.getChakra();
         this.sharinganActive = source.isSharinganActive();
         this.sharinganStage = source.getSharinganStage();
+        this.msVariant = source.getMsVariant(); // Copy variant
         this.inKamui = source.isInKamuiDimension();
         this.ninjutsuStat = source.getNinjutsuStat();
         this.genjutsuStat = source.getGenjutsuStat();
@@ -88,12 +110,17 @@ public class ShinobiData implements IShinobiData {
         this.village = source.getVillage();
         this.unlockedJutsus.clear();
         this.unlockedJutsus.addAll(source.getUnlockedJutsus());
+        if (source instanceof ShinobiData sData) {
+            this.natureMastery.clear();
+            this.natureMastery.putAll(sData.natureMastery);
+        }
     }
 
     public void saveNBTData(CompoundTag compound) {
         compound.putFloat("chakra", chakra);
         compound.putBoolean("sharinganActive", sharinganActive);
         compound.putInt("sharinganStage", sharinganStage);
+        compound.putString("msVariant", msVariant); // Save variant
         compound.putBoolean("inKamui", inKamui);
         compound.putInt("ninjutsuStat", ninjutsuStat);
         compound.putInt("genjutsuStat", genjutsuStat);
@@ -101,17 +128,27 @@ public class ShinobiData implements IShinobiData {
         compound.putString("PlayerClan", clan.name());
         compound.putString("PlayerArchetype", archetype.name());
         compound.putString("PlayerVillage", village.name());
+
         net.minecraft.nbt.ListTag jutsuList = new net.minecraft.nbt.ListTag();
         for (String jutsu : unlockedJutsus) {
             jutsuList.add(net.minecraft.nbt.StringTag.valueOf(jutsu));
         }
         compound.put("UnlockedJutsus", jutsuList);
+
+        CompoundTag masteryTag = new CompoundTag();
+        for (Map.Entry<String, Integer> entry : natureMastery.entrySet()) {
+            masteryTag.putInt(entry.getKey(), entry.getValue());
+        }
+        compound.put("NatureMastery", masteryTag);
     }
 
     public void loadNBTData(CompoundTag compound) {
         chakra = compound.getFloat("chakra");
         sharinganActive = compound.getBoolean("sharinganActive");
         sharinganStage = compound.getInt("sharinganStage");
+        if (compound.contains("msVariant")) {
+            msVariant = compound.getString("msVariant");
+        }
         inKamui = compound.getBoolean("inKamui");
         ninjutsuStat = compound.getInt("ninjutsuStat");
         genjutsuStat = compound.getInt("genjutsuStat");
@@ -146,6 +183,14 @@ public class ShinobiData implements IShinobiData {
             net.minecraft.nbt.ListTag jutsuList = compound.getList("UnlockedJutsus", net.minecraft.nbt.Tag.TAG_STRING);
             for (int i = 0; i < jutsuList.size(); i++) {
                 this.unlockedJutsus.add(jutsuList.getString(i));
+            }
+        }
+
+        this.natureMastery.clear();
+        if (compound.contains("NatureMastery")) {
+            CompoundTag masteryTag = compound.getCompound("NatureMastery");
+            for (String key : masteryTag.getAllKeys()) {
+                this.natureMastery.put(key, masteryTag.getInt(key));
             }
         }
     }

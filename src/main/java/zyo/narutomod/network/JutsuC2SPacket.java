@@ -40,8 +40,9 @@ public class JutsuC2SPacket {
             ServerPlayer player = context.getSender();
             if (player == null) return;
 
+            // FIX 1: Add "data.hand_signs != null &&" to prevent crashes on passive skills!
             JutsuData castingJutsu = JutsuManager.LOADED_JUTSUS.values().stream()
-                    .filter(data -> data.hand_signs.equals(this.sequence))
+                    .filter(data -> data.hand_signs != null && data.hand_signs.equals(this.sequence))
                     .findFirst()
                     .orElse(null);
 
@@ -63,6 +64,21 @@ public class JutsuC2SPacket {
                             );
                             return;
                         }
+                    }
+
+                    int masteryXP = stats.getNatureMastery(castingJutsu.nature);
+                    int signsToSkip = masteryXP / 200;
+                    int originalLength = castingJutsu.hand_signs.size();
+                    int requiredLength = Math.max(1, originalLength - signsToSkip);
+                    java.util.List<Integer> masteredSequence = castingJutsu.hand_signs.subList(0, requiredLength);
+                    if (!this.sequence.equals(masteredSequence)) {
+                        player.displayClientMessage(Component.literal("§cInvalid Hand Sign sequence!"), true);
+                        player.level().playSound(null, player.blockPosition(), zyo.narutomod.sound.ModSounds.JUTSU_FAIL.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new ClearHandSignsPacket()
+                        );
+                        return;
                     }
 
                     if (stats.getChakra() >= castingJutsu.chakra_cost) {
@@ -95,7 +111,8 @@ public class JutsuC2SPacket {
                 });
             } else {
                 boolean isValidPrefix = JutsuManager.LOADED_JUTSUS.values().stream()
-                        .anyMatch(data -> data.hand_signs.size() >= this.sequence.size() &&
+                        .anyMatch(data -> data.hand_signs != null &&
+                                data.hand_signs.size() >= this.sequence.size() &&
                                 data.hand_signs.subList(0, this.sequence.size()).equals(this.sequence));
 
                 if (!isValidPrefix) {

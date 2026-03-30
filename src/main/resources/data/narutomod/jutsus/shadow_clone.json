@@ -1,9 +1,8 @@
 {
   "id": 3,
-  "type": "genjutsu",
-  "name": "Crow Clone Feint",
+  "type": "ninjutsu",
+  "name": "Shadow Clone",
   "chakra_cost": 30.0,
   "hand_signs": [1, 1, 1],
-  "nature": "yin",
   "xp_cost": 2
 }

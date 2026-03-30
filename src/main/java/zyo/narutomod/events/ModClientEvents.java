@@ -24,6 +24,7 @@ public class ModClientEvents {
     public static final java.util.Map<Integer, Boolean> tsukuyomiVictims = new java.util.HashMap<>();
     public static int dimensionTimer = 0;
     public static boolean wasCharging = false;
+    public static boolean wasSprinting = false;
 
     private static zyo.narutomod.entity.TsukuyomiCrossModel<net.minecraft.world.entity.LivingEntity> crossModel;
 
@@ -49,19 +50,30 @@ public class ModClientEvents {
     }
 
     private static void handleInput(int signId, boolean isGenjutsuMode) {
-        if (isGenjutsuMode) {
+        long windowId = net.minecraft.client.Minecraft.getInstance().getWindow().getWindow();
+
+        boolean isAltDown = com.mojang.blaze3d.platform.InputConstants.isKeyDown(windowId, org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_ALT) ||
+                com.mojang.blaze3d.platform.InputConstants.isKeyDown(windowId, org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_ALT);
+
+        boolean isCtrlDown = com.mojang.blaze3d.platform.InputConstants.isKeyDown(windowId, org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_CONTROL) ||
+                com.mojang.blaze3d.platform.InputConstants.isKeyDown(windowId, org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_CONTROL);
+
+        if (isAltDown || isCtrlDown) {
             if (signId == 3) {
-                net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
-                if (isMySharinganActive() && mySharinganStage() >= 4) {
+                if (isCtrlDown) {
+                } else if (isAltDown) {
                     zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.TsukuyomiPacket());
-                    dimensionTimer = 100;
-                } else if (isMySharinganActive()) {
-                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou need the Mangekyo Sharingan to cast Tsukuyomi!"), true);
                 }
             } else if (signId == 4) {
-                zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.SusanooTogglePacket());
+                if (isCtrlDown) {
+                    zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.AmenotejikaraPacket());
+                } else if (isAltDown) {
+                    zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.SusanooTogglePacket());
+                }
             } else {
-                zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.InstantGenjutsuPacket(signId));
+                if (isAltDown) {
+                    zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.InstantGenjutsuPacket(signId));
+                }
             }
         } else {
             zyo.narutomod.logic.HandSignManager.addSign(signId);
@@ -97,14 +109,8 @@ public class ModClientEvents {
             if (HandSignKeys.SIGN_1.consumeClick()) handleInput(1, isGenjutsuMode);
             if (HandSignKeys.SIGN_2.consumeClick()) handleInput(2, isGenjutsuMode);
             if (HandSignKeys.SIGN_3.consumeClick()) handleInput(3, isGenjutsuMode);
-            if (HandSignKeys.SIGN_4.consumeClick()) {
-                if (isMySharinganActive() && mySharinganStage() == 6) {
-                    PacketHandler.INSTANCE.sendToServer(new AmenotejikaraPacket());
-                }
-                else {
-                    handleInput(4, isGenjutsuMode);
-                }
-            }
+            if (HandSignKeys.SIGN_4.consumeClick()) handleInput(4, isGenjutsuMode);
+
             if (HandSignKeys.SIGN_5.consumeClick()) handleInput(5, isGenjutsuMode);
             if (HandSignKeys.SIGN_6.consumeClick()) handleInput(6, isGenjutsuMode);
             if (HandSignKeys.SIGN_7.consumeClick()) handleInput(7, isGenjutsuMode);
@@ -128,27 +134,53 @@ public class ModClientEvents {
                 }
             }
 
-            // 3. Eye Evolution (F Key)
+            boolean isSprinting = player.isSprinting() && !player.isFallFlying() && !player.isPassenger();
+
+            if (isSprinting && !wasSprinting) {
+                zyo.narutomod.client.PlayerAnimManager.playAnimation(player, "naruto_run");
+                wasSprinting = true;
+            } else if (!isSprinting && wasSprinting) {
+                if (!wasCharging && HandSignManager.getComboTimer() == 0) {
+                    zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
+                }
+                wasSprinting = false;
+            }
+
             while (HandSignKeys.SIGN_8.consumeClick()) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     if (stats.isSharinganActive()) {
-                        if (stats.getSharinganStage() >= 3) {
-                            int nextStage = stats.getSharinganStage() + 1;
-                            if (nextStage > 6) nextStage = 3;
-                            PacketHandler.INSTANCE.sendToServer(new SharinganTogglePacket(true, nextStage));
-                            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§4Eyes Evolving..."), true);
+                        int currentStage = stats.getSharinganStage();
+
+                        if (currentStage >= 3) {
+                            int maxAllowedStage = 3;
+                            if (stats.hasJutsu("narutomod:rinnegan")) maxAllowedStage = 6;
+                            else if (stats.hasJutsu("narutomod:eternal_mangekyou")) maxAllowedStage = 5;
+                            else if (stats.hasJutsu("narutomod:mangekyou_sharingan")) maxAllowedStage = 4;
+
+                            int nextStage = currentStage + 1;
+                            if (nextStage > maxAllowedStage) {
+                                nextStage = 3;
+                            }
+
+                            if (nextStage != currentStage) {
+                                PacketHandler.INSTANCE.sendToServer(new SharinganTogglePacket(true, nextStage));
+                                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§4Eyes Evolving..."), true);
+                            }
                         } else {
-                            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cStage " + stats.getSharinganStage() + " cannot evolve yet."), true);
+                            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYour eyes are not mature enough to evolve yet."), true);
                         }
                     }
                 });
             }
 
-            // 4. Sharingan Toggle
             while (HandSignKeys.SHARINGAN_KEY.consumeClick()) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                    boolean isNowActive = !stats.isSharinganActive();
-                    PacketHandler.INSTANCE.sendToServer(new SharinganTogglePacket(isNowActive, stats.getSharinganStage()));
+                    if (stats.getSharinganStage() > 0) {
+                        boolean isNowActive = !stats.isSharinganActive();
+                        PacketHandler.INSTANCE.sendToServer(new SharinganTogglePacket(isNowActive, stats.getSharinganStage()));
+                    } else {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§8You do not possess any ocular powers..."), true);
+                    }
                 });
             }
 

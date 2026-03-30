@@ -20,7 +20,7 @@ public class ClientModEvents {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.FIREBALL_JUTSU.get(), zyo.narutomod.entity.FireballRenderer::new);
-        event.registerEntityRenderer(ModEntities.CROW_CLONE.get(), CrowCloneRenderer::new);
+        event.registerEntityRenderer(ModEntities.SHADOW_CLONE.get(), CrowCloneRenderer::new);
         event.registerEntityRenderer(ModEntities.SUBSTITUTION_LOG.get(), SubstitutionLogRenderer::new);
         event.registerEntityRenderer(zyo.narutomod.entity.ModEntities.SHACKLING_STAKE.get(), ShacklingStakeRenderer::new);
         event.registerEntityRenderer(ModEntities.SUSANOO.get(), zyo.narutomod.entity.SusanooRenderer::new);

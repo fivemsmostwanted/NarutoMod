@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 import zyo.narutomod.NarutoMod;
 import zyo.narutomod.capability.ShinobiData;
 import zyo.narutomod.capability.ShinobiDataProvider;
+import zyo.narutomod.entity.ModEntities;
 
 public class CapabilityEvents {
 
@@ -23,7 +24,7 @@ public class CapabilityEvents {
 
         @SubscribeEvent
         public static void entityAttributeEvent(net.minecraftforge.event.entity.EntityAttributeCreationEvent event) {
-            event.put(zyo.narutomod.entity.ModEntities.CROW_CLONE.get(),
+            event.put(ModEntities.SHADOW_CLONE.get(),
                     zyo.narutomod.entity.CrowCloneEntity.createAttributes().build());
             event.put(zyo.narutomod.entity.ModEntities.SUSANOO.get(),
                     zyo.narutomod.entity.SusanooEntity.createAttributes().build());

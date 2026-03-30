@@ -20,6 +20,10 @@ public interface IShinobiData {
     boolean isInKamuiDimension();
     void setInKamuiDimension(boolean inDimension);
 
+    // --- NEW: Mangekyou Variant ---
+    String getMsVariant();
+    void setMsVariant(String variant);
+
     int getNinjutsuStat();
     void setNinjutsuStat(int level);
 
@@ -40,6 +44,9 @@ public interface IShinobiData {
 
     void unlockJutsu(String jutsuId);
     boolean hasJutsu(String jutsuId);
+
+    int getNatureMastery(String nature);
+    void addNatureMastery(String nature, int amount);
 
     void copyFrom(IShinobiData source);
 }

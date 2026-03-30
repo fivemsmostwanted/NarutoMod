@@ -4,5 +4,6 @@
   "type": "ninjutsu",
   "name": "Fireball Jutsu",
   "chakra_cost": 25.0,
-  "hand_signs": [1, 2, 3]
+  "hand_signs": [1, 2, 3],
+  "xp_cost": 2
 }

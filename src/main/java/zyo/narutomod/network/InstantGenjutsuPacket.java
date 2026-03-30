@@ -20,7 +20,7 @@ public class InstantGenjutsuPacket {
     }
 
     public void encode(FriendlyByteBuf buf) {
-        buf.writeInt(slotId);
+        buf.writeInt(this.slotId);
     }
 
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
@@ -30,10 +30,24 @@ public class InstantGenjutsuPacket {
             if (player == null) return;
 
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                if (stats.isSharinganActive() && stats.getSharinganStage() >= 3) {
+                if (this.slotId == 1 || this.slotId == 2) {
+                    if (!stats.isSharinganActive()) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou must activate your Sharingan first!"), true);
+                        player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                        return;
+                    }
+                }
+
+                boolean canCast = false;
+
+                if (this.slotId == 1 && stats.hasJutsu("narutomod:shackling_stakes")) canCast = true;
+                if (this.slotId == 2 && stats.hasJutsu("narutomod:crow_clone_feint")) canCast = true;
+
+                if (canCast) {
                     JutsuActions.executeInstant(this.slotId, player);
                 } else {
-                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYour eyes are not mature enough for this..."), true);
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou haven't learned this Genjutsu yet!"), true);
+                    player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
                 }
             });
         });

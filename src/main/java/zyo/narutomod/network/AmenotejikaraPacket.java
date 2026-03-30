@@ -24,40 +24,47 @@ public class AmenotejikaraPacket {
             ServerPlayer player = context.getSender();
             if (player == null) return;
 
-            double range = 30.0;
-            Vec3 eyePos = player.getEyePosition();
-            Vec3 lookVec = player.getLookAngle();
-            Vec3 reachVec = eyePos.add(lookVec.scale(range));
-
-            EntityHitResult entityHit = getEntityHitResult(player, eyePos, reachVec);
-            if (entityHit != null) {
-                Entity target = entityHit.getEntity();
-                Vec3 playerPos = player.position();
-                Vec3 targetPos = target.position();
-
-                player.teleportTo(targetPos.x, targetPos.y, targetPos.z);
-                target.teleportTo(playerPos.x, playerPos.y, playerPos.z);
-
-                playAmenoEffects(player.serverLevel(), playerPos, targetPos);
-                return;
-            }
-
-            BlockHitResult blockHit = player.level().clip(new net.minecraft.world.level.ClipContext(
-                    eyePos, reachVec, net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
-
-            if (blockHit.getType() == HitResult.Type.BLOCK) {
-                net.minecraft.core.BlockPos targetPos = blockHit.getBlockPos();
-                net.minecraft.core.BlockPos playerPos = player.blockPosition();
-
-                net.minecraft.world.level.block.state.BlockState targetState = player.level().getBlockState(targetPos);
-
-                if (!targetState.isAir() && targetState.getDestroySpeed(player.level(), targetPos) >= 0) {
-                    player.level().setBlock(targetPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-                    player.teleportTo(targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5);
-                    player.level().setBlock(playerPos, targetState, 3);
-                    playAmenoEffects(player.serverLevel(), Vec3.atCenterOf(playerPos), Vec3.atCenterOf(targetPos));
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (!stats.isSharinganActive() || stats.getSharinganStage() < 6) {
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou need the Rinnegan active to use this!"), true);
+                    return;
                 }
-            }
+
+                double range = 30.0;
+                Vec3 eyePos = player.getEyePosition();
+                Vec3 lookVec = player.getLookAngle();
+                Vec3 reachVec = eyePos.add(lookVec.scale(range));
+
+                EntityHitResult entityHit = getEntityHitResult(player, eyePos, reachVec);
+                if (entityHit != null) {
+                    Entity target = entityHit.getEntity();
+                    Vec3 playerPos = player.position();
+                    Vec3 targetPos = target.position();
+
+                    player.teleportTo(targetPos.x, targetPos.y, targetPos.z);
+                    target.teleportTo(playerPos.x, playerPos.y, playerPos.z);
+
+                    playAmenoEffects(player.serverLevel(), playerPos, targetPos);
+                    return;
+                }
+
+                BlockHitResult blockHit = player.level().clip(new net.minecraft.world.level.ClipContext(
+                        eyePos, reachVec, net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+
+                if (blockHit.getType() == HitResult.Type.BLOCK) {
+                    net.minecraft.core.BlockPos targetPos = blockHit.getBlockPos();
+                    net.minecraft.core.BlockPos playerPos = player.blockPosition();
+
+                    net.minecraft.world.level.block.state.BlockState targetState = player.level().getBlockState(targetPos);
+
+                    if (!targetState.isAir() && targetState.getDestroySpeed(player.level(), targetPos) >= 0) {
+                        player.level().setBlock(targetPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                        player.teleportTo(targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5);
+                        player.level().setBlock(playerPos, targetState, 3);
+                        playAmenoEffects(player.serverLevel(), Vec3.atCenterOf(playerPos), Vec3.atCenterOf(targetPos));
+                    }
+                }
+            });
         });
         context.setPacketHandled(true);
     }

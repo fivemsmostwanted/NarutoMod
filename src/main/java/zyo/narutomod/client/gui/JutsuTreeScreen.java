@@ -1,5 +1,6 @@
 package zyo.narutomod.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -16,9 +17,12 @@ import zyo.narutomod.network.UnlockJutsuPacket;
 
 public class JutsuTreeScreen extends Screen {
 
+    private static final ResourceLocation BG_TEXTURE = ResourceLocation.withDefaultNamespace("textures/block/deepslate_tiles.png");
+
     private double panX = 0;
     private double panY = 0;
-    private float zoom = 1.0f;
+    
+    private float zoom = 0.70f;
 
     private boolean isDragging = false;
     private double lastMouseX = 0;
@@ -36,15 +40,14 @@ public class JutsuTreeScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        this.panX = this.width / 2.0;
-        this.panY = this.height / 2.0;
+        this.panX = this.width * 0.35;
+        this.panY = this.height * 0.5;
     }
 
     private boolean canSeeNodeBranch(IShinobiData stats, JutsuNode node) {
         if (node.getRequiredClan() != zyo.narutomod.player.Clan.CLANLESS && stats.getClan() != node.getRequiredClan()) return false;
         if (node.getRequiredVillage() != zyo.narutomod.player.Village.NONE && stats.getVillage() != node.getRequiredVillage()) return false;
         if (node.getRequiredSharinganStage() > 0 && stats.getSharinganStage() < node.getRequiredSharinganStage()) return false;
-
         return true;
     }
 
@@ -53,8 +56,34 @@ public class JutsuTreeScreen extends Screen {
         this.renderBackground(graphics);
         this.hoveredNode = null;
 
-        graphics.pose().pushPose();
+        int windowWidth = Math.min(320, (int) (this.width * 0.85));
+        int windowHeight = Math.min(200, (int) (this.height * 0.85));
+        int windowX = (this.width - windowWidth) / 2;
+        int windowY = (this.height - windowHeight) / 2;
 
+        graphics.fill(windowX - 4, windowY - 4, windowX + windowWidth + 4, windowY + windowHeight + 4, 0xFFFFFFFF);
+        graphics.fill(windowX - 2, windowY - 2, windowX + windowWidth + 2, windowY + windowHeight + 2, 0xFF555555);
+        graphics.fill(windowX, windowY, windowX + windowWidth, windowY + windowHeight, 0xFF000000);
+
+        graphics.enableScissor(windowX, windowY, windowX + windowWidth, windowY + windowHeight);
+
+        int bgSize = 32;
+        float parallaxSpeed = 0.3f;
+        int uOffset = (int) (-this.panX * parallaxSpeed) % bgSize;
+        int vOffset = (int) (-this.panY * parallaxSpeed) % bgSize;
+
+        if (uOffset < 0) uOffset += bgSize;
+        if (vOffset < 0) vOffset += bgSize;
+
+        RenderSystem.setShaderColor(0.4F, 0.4F, 0.4F, 1.0F);
+        for (int x = windowX - uOffset; x < windowX + windowWidth; x += bgSize) {
+            for (int y = windowY - vOffset; y < windowY + windowHeight; y += bgSize) {
+                graphics.blit(BG_TEXTURE, x, y, 0, 0, bgSize, bgSize, 16, 16);
+            }
+        }
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+        graphics.pose().pushPose();
         graphics.pose().translate(this.panX, this.panY, 0);
         graphics.pose().scale(this.zoom, this.zoom, 1.0f);
 
@@ -72,16 +101,17 @@ public class JutsuTreeScreen extends Screen {
                 }
 
                 graphics.pose().popPose();
+                graphics.disableScissor();
 
-                if (this.hoveredNode != null) {
+                boolean isMouseInWindow = mouseX >= windowX && mouseX <= windowX + windowWidth && mouseY >= windowY && mouseY <= windowY + windowHeight;
+                if (this.hoveredNode != null && isMouseInWindow) {
                     renderNodeTooltip(graphics, mouseX, mouseY, this.hoveredNode, stats);
                 }
             });
         } else {
             graphics.pose().popPose();
+            graphics.disableScissor();
         }
-
-        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private void drawConnectionsRecursive(GuiGraphics graphics, JutsuNode node, IShinobiData stats) {
@@ -93,12 +123,29 @@ public class JutsuTreeScreen extends Screen {
 
             int endX = (child.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
             int endY = (child.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
+            int midX = startX + (endX - startX) / 2;
+
+            graphics.fill(startX, startY - 3, midX, startY + 3, 0xFF000000);
+            graphics.fill(midX - 3, Math.min(startY, endY) - 3, midX + 3, Math.max(startY, endY) + 3, 0xFF000000);
+            graphics.fill(midX, endY - 3, endX, endY + 3, 0xFF000000);
+        }
+
+        for (JutsuNode child : node.getChildren()) {
+            if (!canSeeNodeBranch(stats, child)) continue;
+
+            int endX = (child.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
+            int endY = (child.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
+            int midX = startX + (endX - startX) / 2;
 
             int lineColor = stats.hasJutsu(child.getJutsuId().toString()) ? 0xFF00BFFF : 0xFF555555;
 
-            graphics.fill(startX, startY - 2, endX, startY + 2, lineColor);
-            graphics.fill(endX - 2, Math.min(startY, endY), endX + 2, Math.max(startY, endY), lineColor);
+            graphics.fill(startX, startY - 1, midX, startY + 1, lineColor);
+            graphics.fill(midX - 1, Math.min(startY, endY) - 1, midX + 1, Math.max(startY, endY) + 1, lineColor);
+            graphics.fill(midX, endY - 1, endX, endY + 1, lineColor);
+        }
 
+        for (JutsuNode child : node.getChildren()) {
+            if (!canSeeNodeBranch(stats, child)) continue;
             drawConnectionsRecursive(graphics, child, stats);
         }
     }
@@ -110,9 +157,10 @@ public class JutsuTreeScreen extends Screen {
         boolean isUnlocked = stats.hasJutsu(node.getJutsuId().toString());
         boolean canUnlock = !isUnlocked && (node.getParent() == null || stats.hasJutsu(node.getParent().getJutsuId().toString()));
 
-        int frameColor = isUnlocked ? 0xFF00BFFF : (canUnlock ? 0xFFAAAAAA : 0xFF333333);
+        int frameColor = isUnlocked ? 0xFFD4AF37 : (canUnlock ? 0xFF999999 : 0xFF333333);
         int bgColor = isUnlocked ? 0xFF222222 : 0xFF111111;
 
+        graphics.fill(x - 3, y - 3, x + NODE_SIZE + 3, y + NODE_SIZE + 3, 0xFF000000);
         graphics.fill(x - 2, y - 2, x + NODE_SIZE + 2, y + NODE_SIZE + 2, frameColor);
         graphics.fill(x, y, x + NODE_SIZE, y + NODE_SIZE, bgColor);
 
@@ -132,7 +180,7 @@ public class JutsuTreeScreen extends Screen {
             }
         }
 
-        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        RenderSystem.enableBlend();
         graphics.blit(iconLocation, x + 1, y + 1, 0, 0, NODE_SIZE - 2, NODE_SIZE - 2, NODE_SIZE - 2, NODE_SIZE - 2);
 
         if (applyOverlay) {
@@ -144,7 +192,12 @@ public class JutsuTreeScreen extends Screen {
 
         if (adjMouseX >= x && adjMouseX <= x + NODE_SIZE && adjMouseY >= y && adjMouseY <= y + NODE_SIZE) {
             this.hoveredNode = node;
-            graphics.fill(x, y, x + NODE_SIZE, y + NODE_SIZE, 0x44FFFFFF);
+
+            long time = this.minecraft.level.getGameTime();
+            float pulse = (float) (Math.sin(time * 0.15f) * 0.15f + 0.25f);
+            int alpha = (int) (pulse * 255) << 24;
+
+            graphics.fill(x, y, x + NODE_SIZE, y + NODE_SIZE, alpha | 0xFFFFFF);
         }
 
         for (JutsuNode child : node.getChildren()) {
@@ -162,15 +215,31 @@ public class JutsuTreeScreen extends Screen {
         boolean isUnlocked = stats.hasJutsu(node.getJutsuId().toString());
 
         java.util.List<Component> tooltip = new java.util.ArrayList<>();
-        tooltip.add(Component.literal("§b" + name));
-        tooltip.add(Component.literal(isUnlocked ? "§aLearned" : "§7Cost: §a" + cost + " XP Levels"));
-        tooltip.add(Component.literal("§7Req Ninjutsu Lvl: §e" + node.getRequiredNinjutsuLevel()));
+        tooltip.add(Component.literal("§e" + name));
 
-        if (isUnlocked && data != null && data.hand_signs != null) {
-            String signs = data.hand_signs.toString().replaceAll("[\\[\\]]", "");
-            tooltip.add(Component.literal("§dHand Signs: §f" + signs));
-        } else if (!isUnlocked) {
-            tooltip.add(Component.literal("§8Hand Signs: ???"));
+        if (cost > 0) {
+            tooltip.add(Component.literal(isUnlocked ? "§aLearned" : "§7Cost: §a" + cost + " XP Levels"));
+        } else {
+            tooltip.add(Component.literal(isUnlocked ? "§aLearned" : "§7Cost: §aFree"));
+        }
+
+        if (node.getRequiredNinjutsuLevel() > 0) {
+            tooltip.add(Component.literal("§7Req Ninjutsu Lvl: §e" + node.getRequiredNinjutsuLevel()));
+        }
+        if (node.getRequiredGenjutsuLevel() > 0) {
+            tooltip.add(Component.literal("§7Req Genjutsu Lvl: §d" + node.getRequiredGenjutsuLevel()));
+        }
+
+        boolean isDojutsu = data != null && "dojutsu".equalsIgnoreCase(data.type);
+        boolean hasNoSigns = data != null && (data.hand_signs == null || data.hand_signs.isEmpty());
+
+        if (!isDojutsu && !hasNoSigns) {
+            if (isUnlocked) {
+                String signs = data.hand_signs.toString().replaceAll("[\\[\\]]", "");
+                tooltip.add(Component.literal("§5Hand Signs: §f" + signs));
+            } else {
+                tooltip.add(Component.literal("§8Hand Signs: ???"));
+            }
         }
 
         graphics.renderTooltip(this.font, tooltip, java.util.Optional.empty(), mouseX, mouseY);

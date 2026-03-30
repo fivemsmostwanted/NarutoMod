@@ -35,29 +35,33 @@ public class SharinganTogglePacket {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player == null) return;
+
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                stats.setSharinganActive(this.activate);
-                stats.setSharinganStage(this.stage);
+                if (stats.getSharinganStage() > 0) {
+                    stats.setSharinganActive(this.activate);
+                    stats.setSharinganStage(this.stage);
 
-                if (this.activate) {
-                    int amplifier = (this.stage >= 4) ? 1 : 0;
-                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, -1, amplifier, false, false));
-                    player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, -1, amplifier, false, false));
-                } else {
-                    player.removeEffect(MobEffects.MOVEMENT_SPEED);
-                    player.removeEffect(MobEffects.DAMAGE_BOOST);
+                    if (this.activate) {
+                        int amplifier = (this.stage >= 4) ? 1 : 0;
+                        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, -1, amplifier, false, false));
+                        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, -1, amplifier, false, false));
+                    } else {
+                        player.removeEffect(MobEffects.MOVEMENT_SPEED);
+                        player.removeEffect(MobEffects.DAMAGE_BOOST);
 
-                    player.getPassengers().stream()
-                            .filter(e -> e instanceof zyo.narutomod.entity.SusanooEntity)
-                            .forEach(net.minecraft.world.entity.Entity::discard);
+                        player.getPassengers().stream()
+                                .filter(e -> e instanceof zyo.narutomod.entity.SusanooEntity)
+                                .forEach(net.minecraft.world.entity.Entity::discard);
+                    }
+
+                    ServerEvents.activeSharingans.put(player.getUUID(), this.activate);
+                    ServerEvents.sharinganStages.put(player.getUUID(), this.stage);
+
+                    PacketHandler.INSTANCE.send(
+                            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                            new SharinganSyncPacket(player.getUUID(), this.activate, this.stage)
+                    );
                 }
-                ServerEvents.activeSharingans.put(player.getUUID(), this.activate);
-                ServerEvents.sharinganStages.put(player.getUUID(), this.stage);
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                        new SharinganSyncPacket(player.getUUID(), this.activate, this.stage)
-                );
             });
         });
         context.setPacketHandled(true);

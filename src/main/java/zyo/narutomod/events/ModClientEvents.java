@@ -31,6 +31,17 @@ public class ModClientEvents {
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png")
     };
 
+    private static final ResourceLocation[] HANDSIGN_ICONS = {
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/tiger.png"),  // SIGN_1
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/snake.png"),  // SIGN_2
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/ram.png"),    // SIGN_3
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/monkey.png"), // SIGN_4
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/horse.png"),  // SIGN_5
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/rat.png"),    // SIGN_6
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/boar.png"),   // SIGN_7
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/hare.png")    // SIGN_8 (Hidden under F key)
+    };
+
     public static boolean isMySharinganActive() {
         net.minecraft.client.player.LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return false;
@@ -129,16 +140,20 @@ public class ModClientEvents {
                 }
             }
 
-            boolean isSprinting = player.isSprinting() && !player.isFallFlying() && !player.isPassenger();
+            boolean isSprinting = player.isSprinting() && !player.isFallFlying() && !player.isPassenger() && !player.isSwimming() && !player.isInWater();
+            boolean isAttacking = player.swingTime > 0;
 
-            if (isSprinting && !wasSprinting) {
-                zyo.narutomod.client.PlayerAnimManager.playAnimation(player, "naruto_run");
-                wasSprinting = true;
-            } else if (!isSprinting && wasSprinting) {
-                if (!wasCharging && HandSignManager.getComboTimer() == 0) {
-                    zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
+            if (isSprinting && !isAttacking) {
+                if (!wasSprinting) {
+                    zyo.narutomod.client.PlayerAnimManager.playAnimation(player, "naruto_run");
+                    wasSprinting = true;
                 }
-                wasSprinting = false;
+            } else {
+                // If we stop sprinting OR we start attacking, stop the run animation
+                if (wasSprinting) {
+                    zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
+                    wasSprinting = false;
+                }
             }
 
             while (HandSignKeys.SIGN_8.consumeClick()) {
@@ -240,29 +255,81 @@ public class ModClientEvents {
                     HandSignKeys.SIGN_4, HandSignKeys.SIGN_5, HandSignKeys.SIGN_6,
                     HandSignKeys.SIGN_7, HandSignKeys.SIGN_8
             };
-            int slotSpacing = 26;
-            int startX = (screenWidth / 2) - (handSignKeys.length * slotSpacing / 2);
-            int startY = screenHeight - 25;
 
+            // --- HUD RESIZING VARIABLES ---
+            int slotSpacing = 22; // Shrunk from 26 to bring them closer
+            int startX = (screenWidth / 2) - (handSignKeys.length * slotSpacing / 2);
+            int startY = screenHeight - 22; // Lowered slightly to match the smaller size
+
+            // 1. RENDER HOTBAR
             for (int i = 0; i < handSignKeys.length; i++) {
-                int centerX = startX + (i * slotSpacing) + 10;
+                int currentX = startX + (i * slotSpacing);
+                int centerX = currentX + 10;
                 int centerY = startY + 10;
 
-                if (i == 7 && isMySharinganActive()) {
-                    int stage = mySharinganStage() - 1;
-                    if (stage < 0 || stage > 5) stage = 0;
-                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 11, 0xFFFF0000);
-                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFF000000);
-                    graphics.blit(EYE_ICONS[stage], startX + (i * slotSpacing), startY, 20, 20, 0, 0, 64, 64, 64, 64);
+                if (i == 7) {
+                    // 'F' KEY (Sharingan)
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFFFF0000); // Shrunk radius 11 -> 10
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, isMySharinganActive() ? 0xFF000000 : 0x55000000); // Shrunk radius 10 -> 9
+
+                    if (isMySharinganActive()) {
+                        int stage = mySharinganStage() - 1;
+                        if (stage < 0 || stage > 5) stage = 0;
+
+                        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+                        // Padded image: Size shrunk to 14x14, offsets increased by +3 to center it safely inside the circle
+                        graphics.blit(EYE_ICONS[stage], currentX + 3, startY + 3, 14, 14, 0, 0, 64, 64, 64, 64);
+                    } else {
+                        graphics.drawString(mc.font, "F", centerX - (mc.font.width("F") / 2), startY - 10, 0xFFFFFF, false);
+                    }
+
                 } else {
-                    int borderColor = (i == 7) ? 0xFFFF0000 : 0xFFFFFFFF;
-                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 11, borderColor);
-                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0x55000000);
-                    String label = (i == 7) ? "F" : handSignKeys[i].getTranslatedKeyMessage().getString().toUpperCase();
-                    graphics.drawString(mc.font, label, centerX - (mc.font.width(label) / 2), startY - 12, 0xFFFFFF, false);
+                    // STANDARD HAND SIGNS
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFFFFFFFF);
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, 0x55000000);
+
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                    com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+                    // Padded image: Size shrunk to 14x14, offsets increased by +3
+                    graphics.blit(HANDSIGN_ICONS[i], currentX + 3, startY + 3, 14, 14, 0, 0, 256, 256, 256, 256);
+
+                    String label = handSignKeys[i].getTranslatedKeyMessage().getString().toUpperCase();
+                    graphics.drawString(mc.font, label, centerX - (mc.font.width(label) / 2), startY - 10, 0xFFFFFF, false);
                 }
             }
 
+            // 2. RENDER COMBO SEQUENCE
+            java.util.List<Integer> currentCombo = zyo.narutomod.logic.HandSignManager.getSigns();
+
+            if (currentCombo != null && !currentCombo.isEmpty()) {
+                int comboStartY = startY - 30;
+                int comboStartX = (screenWidth / 2) - (currentCombo.size() * slotSpacing / 2);
+
+                for (int i = 0; i < currentCombo.size(); i++) {
+                    int currentX = comboStartX + (i * slotSpacing);
+                    int centerX = currentX + 10;
+                    int centerY = comboStartY + 10;
+
+                    // 1. BASE: Gold circle (creates the radius 10 border)
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFFFFD700);
+
+                    // 2. MIDDLE: Solid White (blocks the gold from bleeding into the center)
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, 0xFFFFFFFF);
+
+                    // 3. TOP: Transparent Black (tints the white to match the exact grey of the hotbar)
+                    zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, 0x55000000);
+
+                    int signId = currentCombo.get(i);
+                    if (signId >= 1 && signId <= 7) {
+                        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+                        graphics.blit(HANDSIGN_ICONS[signId - 1], currentX + 3, comboStartY + 3, 14, 14, 0, 0, 256, 256, 256, 256);
+                    }
+                }
+            }
+
+            // 3. RENDER CHAKRA BAR
             mc.player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 float currentChakra = stats.getChakra();
                 float maxChakra = stats.getMaxChakra();
@@ -276,6 +343,7 @@ public class ModClientEvents {
                 String txt = (int)currentChakra + " / " + (int)maxChakra;
                 graphics.drawString(mc.font, txt, chakraX + (barWidth/2) - (mc.font.width(txt)/2), chakraY - 10, 0x00FFFF, false);
             });
+
             event.setCanceled(true);
         }
     }

@@ -1,4 +1,13 @@
 {
+  "music.menu": {
+    "replace": true,
+    "sounds": [
+      {
+        "name": "narutomod:main_theme",
+        "stream": true
+      }
+    ]
+  },
   "handsign": {
     "category": "player",
     "sounds": [ "narutomod:handsign" ]

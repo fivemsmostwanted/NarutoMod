@@ -119,8 +119,15 @@ public class ActionRequestPacket {
                             existingSusanoo.get().discard();
                             player.displayClientMessage(Component.literal("§8Susanoo Deactivated."), true);
                         } else {
-                            if (stats.getChakra() >= 100.0F) {
-                                stats.setChakra(stats.getChakra() - 100.0F);
+                            // --- CREATIVE MODE BYPASS ADDED HERE ---
+                            boolean isCreative = player.isCreative();
+
+                            if (isCreative || stats.getChakra() >= 100.0F) {
+                                // Only deduct chakra if they are NOT in creative mode
+                                if (!isCreative) {
+                                    stats.setChakra(stats.getChakra() - 100.0F);
+                                }
+
                                 SusanooEntity susanoo = new SusanooEntity(ModEntities.SUSANOO.get(), player.level());
                                 susanoo.setOwner(player);
                                 susanoo.setPos(player.getX(), player.getY(), player.getZ());

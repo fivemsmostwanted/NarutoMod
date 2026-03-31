@@ -8,6 +8,7 @@ public class JutsuData {
     public String name;
     public float chakra_cost;
     public int xp_cost = 1;
+    public int cooldown;
     public List<Integer> hand_signs;
 
     public String nature;

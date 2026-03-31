@@ -21,6 +21,7 @@ public class ShinobiData implements IShinobiData {
 
     private final Map<String, Integer> natureMastery = new HashMap<>();
     private final java.util.List<String> unlockedJutsus = new java.util.ArrayList<>();
+    private final Map<String, Integer> activeCooldowns = new HashMap<>();
     private Clan clan = Clan.CLANLESS;
     private Archetype archetype = Archetype.NONE;
     private Village village = Village.NONE;
@@ -31,7 +32,7 @@ public class ShinobiData implements IShinobiData {
     @Override public void setSharinganStage(int stage) { this.sharinganStage = stage; }
     @Override public boolean isInKamuiDimension() { return inKamui; }
     @Override public void setInKamuiDimension(boolean inDimension) { this.inKamui = inDimension; }
-    
+
     @Override public String getMsVariant() { return msVariant; }
     @Override public void setMsVariant(String variant) { this.msVariant = variant; }
 
@@ -53,8 +54,32 @@ public class ShinobiData implements IShinobiData {
 
     @Override public Village getVillage() { return village; }
     @Override public void setVillage(Village village) { this.village = village; }
+    @Override public Map<String, Integer> getActiveCooldowns() { return this.activeCooldowns; }
+
+    private int msBleedTimer = 0;
+
+    @Override public int getMsBleedTimer() { return msBleedTimer; }
+    @Override public void setMsBleedTimer(int ticks) { this.msBleedTimer = ticks; }
 
     @Override public java.util.List<String> getUnlockedJutsus() { return this.unlockedJutsus; }
+
+    @Override
+    public void setCooldown(String jutsuId, int ticks) {
+        this.activeCooldowns.put(jutsuId, ticks);
+    }
+
+    @Override
+    public boolean isOnCooldown(String jutsuId) {
+        return this.activeCooldowns.containsKey(jutsuId) && this.activeCooldowns.get(jutsuId) > 0;
+    }
+
+    @Override
+    public void tickCooldowns() {
+        this.activeCooldowns.entrySet().removeIf(entry -> {
+            entry.setValue(entry.getValue() - 1);
+            return entry.getValue() <= 0;
+        });
+    }
 
     @Override
     public void unlockJutsu(String jutsuId) {
@@ -79,7 +104,6 @@ public class ShinobiData implements IShinobiData {
             case 6 -> 1500.0f;
             default -> 100.0f;
         };
-
         return baseMax + (this.ninjutsuStat * 15.0f);
     }
 
@@ -101,7 +125,7 @@ public class ShinobiData implements IShinobiData {
         this.chakra = source.getChakra();
         this.sharinganActive = source.isSharinganActive();
         this.sharinganStage = source.getSharinganStage();
-        this.msVariant = source.getMsVariant(); // Copy variant
+        this.msVariant = source.getMsVariant();
         this.inKamui = source.isInKamuiDimension();
         this.ninjutsuStat = source.getNinjutsuStat();
         this.genjutsuStat = source.getGenjutsuStat();
@@ -113,6 +137,8 @@ public class ShinobiData implements IShinobiData {
         if (source instanceof ShinobiData sData) {
             this.natureMastery.clear();
             this.natureMastery.putAll(sData.natureMastery);
+            this.activeCooldowns.clear();
+            this.activeCooldowns.putAll(sData.activeCooldowns);
         }
     }
 
@@ -120,7 +146,7 @@ public class ShinobiData implements IShinobiData {
         compound.putFloat("chakra", chakra);
         compound.putBoolean("sharinganActive", sharinganActive);
         compound.putInt("sharinganStage", sharinganStage);
-        compound.putString("msVariant", msVariant); // Save variant
+        compound.putString("msVariant", msVariant);
         compound.putBoolean("inKamui", inKamui);
         compound.putInt("ninjutsuStat", ninjutsuStat);
         compound.putInt("genjutsuStat", genjutsuStat);
@@ -140,6 +166,12 @@ public class ShinobiData implements IShinobiData {
             masteryTag.putInt(entry.getKey(), entry.getValue());
         }
         compound.put("NatureMastery", masteryTag);
+
+        CompoundTag cooldownTag = new CompoundTag();
+        for (Map.Entry<String, Integer> entry : activeCooldowns.entrySet()) {
+            cooldownTag.putInt(entry.getKey(), entry.getValue());
+        }
+        compound.put("ActiveCooldowns", cooldownTag);
     }
 
     public void loadNBTData(CompoundTag compound) {
@@ -191,6 +223,14 @@ public class ShinobiData implements IShinobiData {
             CompoundTag masteryTag = compound.getCompound("NatureMastery");
             for (String key : masteryTag.getAllKeys()) {
                 this.natureMastery.put(key, masteryTag.getInt(key));
+            }
+        }
+
+        this.activeCooldowns.clear();
+        if (compound.contains("ActiveCooldowns")) {
+            CompoundTag cooldownTag = compound.getCompound("ActiveCooldowns");
+            for (String key : cooldownTag.getAllKeys()) {
+                this.activeCooldowns.put(key, cooldownTag.getInt(key));
             }
         }
     }

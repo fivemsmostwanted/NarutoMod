@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import zyo.narutomod.capability.ShinobiDataProvider;
 import zyo.narutomod.logic.StatType;
+import zyo.narutomod.events.ServerEvents;
 
 import java.util.function.Supplier;
 
@@ -34,11 +35,7 @@ public class StatUpgradePacket {
                     case NINJUTSU -> stats.setNinjutsuStat(stats.getNinjutsuStat() + 1);
                     case GENJUTSU -> stats.setGenjutsuStat(stats.getGenjutsuStat() + 1);
                 }
-
-                PacketHandler.INSTANCE.send(
-                        net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncStatsPacket(stats.getNinjutsuStat(), stats.getGenjutsuStat())
-                );
+                ServerEvents.syncPlayerDataToAllTracking(player);
             });
         });
         context.setPacketHandled(true);

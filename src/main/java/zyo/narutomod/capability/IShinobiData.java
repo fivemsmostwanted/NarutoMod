@@ -7,6 +7,11 @@ import zyo.narutomod.player.Village;
 public interface IShinobiData {
     java.util.List<String> getUnlockedJutsus();
 
+    java.util.Map<String, Integer> getActiveCooldowns();
+    void setCooldown(String jutsuId, int ticks);
+    boolean isOnCooldown(String jutsuId);
+    void tickCooldowns();
+
     float getChakra();
     float getMaxChakra();
     void setChakra(float chakra);
@@ -47,6 +52,9 @@ public interface IShinobiData {
 
     int getNatureMastery(String nature);
     void addNatureMastery(String nature, int amount);
+
+    int getMsBleedTimer();
+    void setMsBleedTimer(int ticks);
 
     void copyFrom(IShinobiData source);
 }

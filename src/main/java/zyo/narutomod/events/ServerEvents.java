@@ -8,31 +8,42 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import zyo.narutomod.NarutoMod;
 import zyo.narutomod.network.PacketHandler;
-import zyo.narutomod.network.SharinganSyncPacket;
+import zyo.narutomod.network.SyncShinobiDataPacket;
 import zyo.narutomod.player.Archetype;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ServerEvents {
-    public static final Map<UUID, Boolean> activeSharingans = new HashMap<>();
-    public static final Map<UUID, Integer> sharinganStages = new HashMap<>();
+
+    public static void syncPlayerData(ServerPlayer target, ServerPlayer receiver) {
+        target.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            if (stats instanceof zyo.narutomod.capability.ShinobiData) {
+                ((zyo.narutomod.capability.ShinobiData) stats).saveNBTData(tag);
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> receiver),
+                        new SyncShinobiDataPacket(target.getId(), tag)
+                );
+            }
+        });
+    }
+
+    public static void syncPlayerDataToAllTracking(ServerPlayer player) {
+        player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            if (stats instanceof zyo.narutomod.capability.ShinobiData) {
+                ((zyo.narutomod.capability.ShinobiData) stats).saveNBTData(tag);
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                        new SyncShinobiDataPacket(player.getId(), tag)
+                );
+            }
+        });
+    }
 
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {
-        if (event.getTarget() instanceof Player targetPlayer && event.getEntity() instanceof ServerPlayer tracker) {
-
-            boolean isActive = activeSharingans.getOrDefault(targetPlayer.getUUID(), false);
-            int stage = sharinganStages.getOrDefault(targetPlayer.getUUID(), 1);
-
-            if (isActive) {
-                PacketHandler.INSTANCE.send(
-                        net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> tracker),
-                        new SharinganSyncPacket(targetPlayer.getUUID(), isActive, stage)
-                );
-            }
+        if (event.getTarget() instanceof ServerPlayer targetPlayer && event.getEntity() instanceof ServerPlayer tracker) {
+            syncPlayerData(targetPlayer, tracker);
         }
     }
 
@@ -40,6 +51,10 @@ public class ServerEvents {
     public static void onPlayerTick(net.minecraftforge.event.TickEvent.PlayerTickEvent event) {
         if (event.side == net.minecraftforge.fml.LogicalSide.SERVER && event.phase == net.minecraftforge.event.TickEvent.Phase.END) {
             ServerPlayer player = (ServerPlayer) event.player;
+
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                stats.tickCooldowns();
+            });
 
             if (player.getPersistentData().getBoolean("TsukuyomiTrapped")) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
@@ -64,24 +79,13 @@ public class ServerEvents {
                         stats.unlockJutsu("narutomod:sharingan_root");
                         stats.setSharinganActive(true);
 
-                        activeSharingans.put(player.getUUID(), true);
-                        sharinganStages.put(player.getUUID(), 1);
-
-                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                                new zyo.narutomod.network.SharinganSyncPacket(player.getUUID(), true, 1)
-                        );
-                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                                new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
-                        );
+                        syncPlayerDataToAllTracking(player);
                     }
                 }
             });
 
             if (player.tickCount % 20 == 0) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-
                     float currentChakra = stats.getChakra();
                     float maxChakra = stats.getMaxChakra();
                     boolean needsSync = false;
@@ -103,7 +107,7 @@ public class ServerEvents {
                             default -> 4.0f;
                         };
 
-                        if(stats.getArchetype() == Archetype.DESTROYER) {
+                        if (stats.getArchetype() == Archetype.DESTROYER) {
                             baseDrain *= 1.5f;
                         }
 
@@ -121,12 +125,6 @@ public class ServerEvents {
                             player.removeEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED);
                             player.removeEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
 
-                            activeSharingans.put(player.getUUID(), false);
-                            zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                                    net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                                    new zyo.narutomod.network.SharinganSyncPacket(player.getUUID(), false, stats.getSharinganStage())
-                            );
-
                             player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cChakra exhausted. Sharingan deactivated."), true);
                         } else {
                             stats.setChakra(newChakra);
@@ -140,10 +138,7 @@ public class ServerEvents {
                     }
 
                     if (needsSync) {
-                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                                new zyo.narutomod.network.SyncChakraPacket(stats.getChakra())
-                        );
+                        syncPlayerDataToAllTracking(player);
                     }
                 });
             }
@@ -206,38 +201,10 @@ public class ServerEvents {
                                 net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                                 new zyo.narutomod.network.OpenSetupScreenPacket()
                         );
-                    } else if (mode == zyo.narutomod.config.NarutoConfig.SelectionMode.RANDOM_ITEM) {
-                        //TODO: build the random item!
                     }
                 }
 
-                activeSharingans.put(player.getUUID(), stats.isSharinganActive());
-                sharinganStages.put(player.getUUID(), stats.getSharinganStage());
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new SharinganSyncPacket(player.getUUID(), stats.isSharinganActive(), stats.getSharinganStage())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncStatsPacket(stats.getNinjutsuStat(), stats.getGenjutsuStat())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncChakraPacket(stats.getChakra())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncFactionPacket(stats.getClan(), stats.getVillage())
-                );
+                syncPlayerDataToAllTracking(player);
             });
         }
     }
@@ -248,8 +215,6 @@ public class ServerEvents {
             player.removeEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED);
             player.removeEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
         }
-        activeSharingans.remove(event.getEntity().getUUID());
-        sharinganStages.remove(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -268,35 +233,10 @@ public class ServerEvents {
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncStatsPacket(stats.getNinjutsuStat(), stats.getGenjutsuStat())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncFactionPacket(stats.getClan(), stats.getVillage())
-                );
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncChakraPacket(stats.getChakra())
-                );
-
                 if (stats.isSharinganActive()) {
                     stats.setSharinganActive(false);
-                    activeSharingans.put(player.getUUID(), false);
                 }
-
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new SharinganSyncPacket(player.getUUID(), false, stats.getSharinganStage())
-                );
+                syncPlayerDataToAllTracking(player);
             });
         }
     }
@@ -304,19 +244,14 @@ public class ServerEvents {
     @SubscribeEvent
     public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
-                );
-            });
+            syncPlayerDataToAllTracking(player);
         }
     }
 
     @SubscribeEvent
     public static void onAddReloadListeners(net.minecraftforge.event.AddReloadListenerEvent event) {
         event.addListener(new zyo.narutomod.jutsu.JutsuManager());
-        zyo.narutomod.jutsu.JutsuActions.registerAll();
+        zyo.narutomod.jutsu.JutsuRegistry.registerAll();
         zyo.narutomod.jutsu.JutsuTreeManager.initializeTrees();
     }
 }

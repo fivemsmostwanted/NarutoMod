@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import zyo.narutomod.NarutoMod;
-import zyo.narutomod.events.ModClientEvents;
+import zyo.narutomod.capability.ShinobiDataProvider;
 
 public class SharinganEyeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
@@ -34,41 +34,41 @@ public class SharinganEyeLayer extends RenderLayer<AbstractClientPlayer, PlayerM
             return;
         }
 
-        boolean hasSharingan = ModClientEvents.activeSharingans.getOrDefault(player.getUUID(), false);
+        player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+            if (!stats.isSharinganActive()) {
+                return;
+            }
 
-        if (!hasSharingan) {
-            return;
-        }
+            int stage = stats.getSharinganStage() - 1;
+            if (stage < 0 || stage > 5) stage = 0;
 
-        int stage = ModClientEvents.sharinganStages.getOrDefault(player.getUUID(), 1) - 1;
-        if (stage < 0 || stage > 5) stage = 0;
+            long time = player.level().getDayTime() % 24000;
+            boolean isNight = time >= 13000 && time <= 23000;
 
-        long time = player.level().getDayTime() % 24000;
-        boolean isNight = time >= 13000 && time <= 23000;
+            RenderType rt = isNight ?
+                    RenderType.eyes(SHARINGAN_TEXTURES[stage]) :
+                    RenderType.entityTranslucent(SHARINGAN_TEXTURES[stage]);
 
-        RenderType rt = isNight ?
-                RenderType.eyes(SHARINGAN_TEXTURES[stage]) :
-                RenderType.entityTranslucent(SHARINGAN_TEXTURES[stage]);
+            VertexConsumer vertexConsumer = buffer.getBuffer(rt);
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(rt);
+            poseStack.pushPose();
+            poseStack.scale(1.001f, 1.001f, 1.001f);
 
-        poseStack.pushPose();
-        poseStack.scale(1.001f, 1.001f, 1.001f);
+            if (isNight) {
+                poseStack.translate(0, 0, -0.005f);
+            }
 
-        if (isNight) {
-            poseStack.translate(0, 0, -0.005f);
-        }
+            int lightToUse = isNight ? 15728640 : packedLight;
 
-        int lightToUse = isNight ? 15728640 : packedLight;
+            this.getParentModel().renderToBuffer(
+                    poseStack,
+                    vertexConsumer,
+                    lightToUse,
+                    OverlayTexture.NO_OVERLAY,
+                    1.0F, 1.0F, 1.0F, 1.0F
+            );
 
-        this.getParentModel().renderToBuffer(
-                poseStack,
-                vertexConsumer,
-                lightToUse,
-                OverlayTexture.NO_OVERLAY,
-                1.0F, 1.0F, 1.0F, 1.0F
-        );
-
-        poseStack.popPose();
+            poseStack.popPose();
+        });
     }
 }

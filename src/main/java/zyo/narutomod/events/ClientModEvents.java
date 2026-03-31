@@ -48,6 +48,7 @@ public class ClientModEvents {
         if (renderer != null) {
             renderer.addLayer(new zyo.narutomod.client.SharinganEyeLayer(renderer));
             renderer.addLayer(new zyo.narutomod.client.TsukuyomiCrossLayer<>(renderer, event.getEntityModels()));
+            renderer.addLayer(new zyo.narutomod.client.MSBleedLayer(renderer));
         }
     }
 }

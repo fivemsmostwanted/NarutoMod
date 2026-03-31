@@ -4,10 +4,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
 import zyo.narutomod.capability.ShinobiDataProvider;
 import zyo.narutomod.player.Clan;
 import zyo.narutomod.player.Village;
+import zyo.narutomod.events.ServerEvents;
 
 import java.util.function.Supplier;
 
@@ -41,17 +41,7 @@ public class SetPlayerFactionPacket {
                     stats.setClan(Clan.valueOf(this.clanName));
                     stats.setVillage(Village.valueOf(this.villageName));
                     player.displayClientMessage(Component.literal("§aWelcome to the Shinobi World!"), true);
-
-                    PacketHandler.INSTANCE.send(
-                            PacketDistributor.PLAYER.with(() -> player),
-                            new SyncStatsPacket(stats.getNinjutsuStat(), stats.getGenjutsuStat())
-                    );
-
-                    PacketHandler.INSTANCE.send(
-                            PacketDistributor.PLAYER.with(() -> player),
-                            new SyncFactionPacket(stats.getClan(), stats.getVillage())
-                    );
-
+                    ServerEvents.syncPlayerDataToAllTracking(player);
                 } catch (IllegalArgumentException e) {
                     System.err.println("Invalid Clan or Village submitted by " + player.getName().getString());
                 }

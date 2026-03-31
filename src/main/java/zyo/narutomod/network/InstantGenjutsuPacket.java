@@ -4,7 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import zyo.narutomod.capability.ShinobiDataProvider;
-import zyo.narutomod.jutsu.JutsuActions;
+import zyo.narutomod.jutsu.JutsuRegistry;
 
 import java.util.function.Supplier;
 
@@ -44,7 +44,7 @@ public class InstantGenjutsuPacket {
                 if (this.slotId == 2 && stats.hasJutsu("narutomod:crow_clone_feint")) canCast = true;
 
                 if (canCast) {
-                    JutsuActions.executeInstant(this.slotId, player);
+                    JutsuRegistry.executeInstant(this.slotId, player);
                 } else {
                     player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou haven't learned this Genjutsu yet!"), true);
                     player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);

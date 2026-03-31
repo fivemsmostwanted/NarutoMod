@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import zyo.narutomod.capability.ShinobiDataProvider;
 import zyo.narutomod.player.Archetype;
+import zyo.narutomod.events.ServerEvents;
 
 public class ModCommands {
 
@@ -58,6 +59,7 @@ public class ModCommands {
 
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 stats.setArchetype(archetype);
+                ServerEvents.syncPlayerDataToAllTracking(player);
                 source.sendSuccess(() -> Component.literal("§aSuccessfully set archetype to: " + archetype.name()), false);
             });
         } catch (IllegalArgumentException e) {
@@ -82,7 +84,10 @@ public class ModCommands {
                     source.sendSuccess(() -> Component.literal("§a[Server] Genjutsu upgraded to Level " + level), false);
                 } else {
                     source.sendFailure(Component.literal("§cUnknown stat! Use 'ninjutsu' or 'genjutsu'."));
+                    return;
                 }
+
+                ServerEvents.syncPlayerDataToAllTracking(player);
             });
         } catch (Exception e) {}
         return 1;
@@ -96,12 +101,7 @@ public class ModCommands {
             ServerPlayer player = source.getPlayerOrException();
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 stats.setSharinganStage(stage);
-                zyo.narutomod.events.ServerEvents.sharinganStages.put(player.getUUID(), stage);
-
-                zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                        net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                        new zyo.narutomod.network.SharinganSyncPacket(player.getUUID(), stats.isSharinganActive(), stage)
-                );
+                ServerEvents.syncPlayerDataToAllTracking(player);
 
                 source.sendSuccess(() -> Component.literal("§cSharingan updated to Stage " + stage), false);
             });
@@ -131,7 +131,6 @@ public class ModCommands {
                 player.sendSystemMessage(Component.literal("§cSharingan Stage: §f" + stats.getSharinganStage()));
                 player.sendSystemMessage(Component.literal("§eNinjutsu Level: §f" + stats.getNinjutsuStat()));
                 player.sendSystemMessage(Component.literal("§dGenjutsu Level: §f" + stats.getGenjutsuStat()));
-                // Add the rest here as you expand IShinobiData!
             });
         } catch (Exception e) {}
         return 1;

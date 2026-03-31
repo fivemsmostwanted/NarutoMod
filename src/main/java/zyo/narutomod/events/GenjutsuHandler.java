@@ -9,7 +9,6 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import zyo.narutomod.NarutoMod;
-import zyo.narutomod.capability.ShinobiDataProvider;
 import zyo.narutomod.entity.ShacklingStakeEntity;
 
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -63,7 +62,6 @@ public class GenjutsuHandler {
                 }
             } else {
                 entity.getPersistentData().putBoolean("TsukuyomiTrapped", false);
-                int casterId = entity.getPersistentData().getInt("TsukuyomiCasterId");
 
                 entity.getPersistentData().remove("TsukuyomiTicks");
                 entity.getPersistentData().remove("TsukuyomiCasterId");
@@ -72,21 +70,6 @@ public class GenjutsuHandler {
                 entity.getPersistentData().remove("TsukuyomiZ");
                 entity.getPersistentData().remove("TsukuyomiYaw");
                 entity.getPersistentData().remove("TsukuyomiPitch");
-
-                if (entity instanceof ServerPlayer sp) {
-                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> sp),
-                            new zyo.narutomod.network.TsukuyomiSyncPacket(entity.getId(), casterId, false, 0, 0)
-                    );
-                }
-
-                net.minecraft.world.entity.Entity caster = entity.level().getEntity(casterId);
-                if (caster instanceof ServerPlayer casterPlayer) {
-                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> casterPlayer),
-                            new zyo.narutomod.network.TsukuyomiSyncPacket(entity.getId(), casterId, false, 0, 0)
-                    );
-                }
             }
         }
     }
@@ -96,9 +79,9 @@ public class GenjutsuHandler {
 
         caster.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
             if (stats.getArchetype().name().equals("DESTROYER")) {
-                multiplier[0] = 0.65f; // 35% reduction in Genjutsu effectiveness
+                multiplier[0] = 0.65f;
             } else if (stats.getArchetype().name().equals("ILLUSIONIST")) {
-                multiplier[0] = 1.35f; // 35% boost for Genjutsu specialists
+                multiplier[0] = 1.35f;
             }
         });
 

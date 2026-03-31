@@ -10,6 +10,7 @@ import zyo.narutomod.jutsu.JutsuData;
 import zyo.narutomod.jutsu.JutsuManager;
 import zyo.narutomod.jutsu.JutsuNode;
 import zyo.narutomod.jutsu.JutsuTreeManager;
+import zyo.narutomod.events.ServerEvents;
 
 import java.util.function.Supplier;
 
@@ -73,16 +74,7 @@ public class UnlockJutsuPacket {
                     player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
                     player.displayClientMessage(Component.literal("§aSuccessfully learned Jutsu!"), true);
 
-                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                            new zyo.narutomod.network.SyncUnlockedJutsusPacket(stats.getUnlockedJutsus())
-                    );
-
-                    zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                            net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
-                            new zyo.narutomod.network.SharinganSyncPacket(player.getUUID(), stats.isSharinganActive(), stats.getSharinganStage())
-                    );
-
+                    ServerEvents.syncPlayerDataToAllTracking(player);
                 } else {
                     player.displayClientMessage(Component.literal("§cNot enough XP levels! Need: " + cost), true);
                 }

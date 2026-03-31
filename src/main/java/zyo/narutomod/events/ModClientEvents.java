@@ -96,11 +96,11 @@ public class ModClientEvents {
             net.minecraft.client.player.LocalPlayer player = mc.player;
             if (player == null) return;
 
-            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                if (stats.getMsBleedTimer() > 0) {
-                    stats.setMsBleedTimer(stats.getMsBleedTimer() - 1);
-                }
-            });
+//            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+//                if (stats.getMsBleedTimer() > 0) {
+//                    stats.setMsBleedTimer(stats.getMsBleedTimer() - 1);
+//                }
+//            });
 
             if (player.getPersistentData().getBoolean("TsukuyomiTrapped")) {
                 float lockYaw = player.getPersistentData().getFloat("TsukuyomiYaw");

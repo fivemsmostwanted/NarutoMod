@@ -28,7 +28,7 @@ public class ClientModEvents {
 
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(zyo.narutomod.entity.FireballModel.LAYER_LOCATION, zyo.narutomod.entity.FireballModel::createBodyLayer);
+        //event.registerLayerDefinition(zyo.narutomod.entity.FireballModel.LAYER_LOCATION, zyo.narutomod.entity.FireballModel::createBodyLayer);
         event.registerLayerDefinition(TSUKUYOMI_CROSS_LAYER, zyo.narutomod.entity.TsukuyomiCrossModel::createBodyLayer);
         event.registerLayerDefinition(SubstitutionLogModel.LAYER_LOCATION, SubstitutionLogModel::createBodyLayer);
         event.registerLayerDefinition(zyo.narutomod.client.model.ShacklingStakeModel.LAYER_LOCATION, zyo.narutomod.client.model.ShacklingStakeModel::createBodyLayer);

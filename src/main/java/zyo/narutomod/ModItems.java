@@ -16,11 +16,6 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, NarutoMod.MODID);
 
-    // This is the old one, you can keep or remove it
-    public static final RegistryObject<Item> SASUKE_KATANA = ITEMS.register("sasuke_katana",
-            () -> new Item(new Item.Properties()));
-
-    // The new 3D Kusanagi
     public static final RegistryObject<Item> KUSANAGI_SASUKE = ITEMS.register("kusanagi_sasuke",
             () -> new KusanagiSasukeItem(Tiers.DIAMOND, 3, -2.4F, new net.minecraft.world.item.Item.Properties()));
 

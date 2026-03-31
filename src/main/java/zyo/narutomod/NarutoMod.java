@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import software.bernie.geckolib.GeckoLib;
+import zyo.narutomod.item.ModCreativeTabs;
 import zyo.narutomod.network.PacketHandler;
 import zyo.narutomod.particle.ModParticles;
 import zyo.narutomod.sound.ModSounds;
@@ -25,12 +26,12 @@ public class NarutoMod {
         GeckoLib.initialize();
 
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::addCreative);
 
         MinecraftForge.EVENT_BUS.register(this);
 
         PacketHandler.register();
         ModItems.register(modEventBus);
+        ModCreativeTabs.register(modEventBus);
         ModParticles.register(modEventBus);
         ModSounds.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
@@ -38,13 +39,5 @@ public class NarutoMod {
 
     private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
         LOGGER.info("Naruto Mod Initialized");
-    }
-
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            event.accept(ModItems.SASUKE_KATANA.get());
-            event.accept(ModItems.KUSANAGI_SASUKE.get());
-            event.accept(ModItems.AKATSUKI_CLOAK.get());
-        }
     }
 }

@@ -14,12 +14,9 @@ import java.util.Map;
 public class JutsuManager extends SimpleJsonResourceReloadListener {
 
     private static final Gson GSON = new GsonBuilder().create();
-
-    // The Server's memory bank of every jutsu loaded from JSONs
     public static final Map<ResourceLocation, JutsuData> LOADED_JUTSUS = new HashMap<>();
 
     public JutsuManager() {
-        // This tells Minecraft to look in "data/<modid>/jutsus/"
         super(GSON, "jutsus");
     }
 
@@ -32,7 +29,6 @@ public class JutsuManager extends SimpleJsonResourceReloadListener {
             JsonElement jsonContent = entry.getValue();
 
             try {
-                // Magically turn the JSON into our Java object
                 JutsuData jutsu = GSON.fromJson(jsonContent, JutsuData.class);
                 LOADED_JUTSUS.put(fileLocation, jutsu);
 

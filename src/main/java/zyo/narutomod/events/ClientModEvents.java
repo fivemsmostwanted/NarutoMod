@@ -7,8 +7,10 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import zyo.narutomod.NarutoMod;
+import zyo.narutomod.entity.CrowCloneRenderer;
 import zyo.narutomod.entity.ModEntities;
 import zyo.narutomod.client.model.SubstitutionLogModel;
+import zyo.narutomod.entity.ShacklingStakeRenderer;
 import zyo.narutomod.entity.SubstitutionLogRenderer;
 
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -18,22 +20,26 @@ public class ClientModEvents {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.FIREBALL_JUTSU.get(), zyo.narutomod.entity.FireballRenderer::new);
+        event.registerEntityRenderer(ModEntities.SHADOW_CLONE.get(), CrowCloneRenderer::new);
         event.registerEntityRenderer(ModEntities.SUBSTITUTION_LOG.get(), SubstitutionLogRenderer::new);
+        event.registerEntityRenderer(zyo.narutomod.entity.ModEntities.SHACKLING_STAKE.get(), ShacklingStakeRenderer::new);
+        event.registerEntityRenderer(ModEntities.SUSANOO.get(), zyo.narutomod.entity.SusanooRenderer::new);
     }
 
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(zyo.narutomod.entity.FireballModel.LAYER_LOCATION, zyo.narutomod.entity.FireballModel::createBodyLayer);
+        //event.registerLayerDefinition(zyo.narutomod.entity.FireballModel.LAYER_LOCATION, zyo.narutomod.entity.FireballModel::createBodyLayer);
         event.registerLayerDefinition(TSUKUYOMI_CROSS_LAYER, zyo.narutomod.entity.TsukuyomiCrossModel::createBodyLayer);
-        // Register the Log Model Layer
         event.registerLayerDefinition(SubstitutionLogModel.LAYER_LOCATION, SubstitutionLogModel::createBodyLayer);
+        event.registerLayerDefinition(zyo.narutomod.client.model.ShacklingStakeModel.LAYER_LOCATION, zyo.narutomod.client.model.ShacklingStakeModel::createBodyLayer);
+        event.registerLayerDefinition(zyo.narutomod.client.model.AkatsukiCloakModel.LAYER_LOCATION, zyo.narutomod.client.model.AkatsukiCloakModel::createLayer);
     }
 
     @SubscribeEvent
     @SuppressWarnings("deprecation")
     public static void addPlayerLayers(EntityRenderersEvent.AddLayers event) {
-        attachPlayerLayers(event, "default"); // Steve (Wide)
-        attachPlayerLayers(event, "slim");    // Alex (Slim)
+        attachPlayerLayers(event, "default");
+        attachPlayerLayers(event, "slim");
     }
 
     @SuppressWarnings("deprecation")
@@ -42,6 +48,7 @@ public class ClientModEvents {
         if (renderer != null) {
             renderer.addLayer(new zyo.narutomod.client.SharinganEyeLayer(renderer));
             renderer.addLayer(new zyo.narutomod.client.TsukuyomiCrossLayer<>(renderer, event.getEntityModels()));
+            renderer.addLayer(new zyo.narutomod.client.MSBleedLayer(renderer));
         }
     }
 }

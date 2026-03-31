@@ -5,77 +5,140 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 import zyo.narutomod.NarutoMod;
 import zyo.narutomod.network.PacketHandler;
-import zyo.narutomod.network.SharinganSyncPacket;
+import zyo.narutomod.network.SyncShinobiDataPacket;
+import zyo.narutomod.player.Archetype;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-// Notice this is FORGE bus, but NOT Dist.CLIENT! This runs strictly on the Server.
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ServerEvents {
 
-    // The Server's memory!
-    public static final Map<UUID, Boolean> activeSharingans = new HashMap<>();
-    public static final Map<UUID, Integer> sharinganStages = new HashMap<>();
-
-    // 1. This fires the exact moment a player loads in and "sees" another player
-    @SubscribeEvent
-    public static void onStartTracking(PlayerEvent.StartTracking event) {
-        // "Target" is the player being looked at. "Tracker" is the player looking.
-        if (event.getTarget() instanceof Player targetPlayer && event.getEntity() instanceof ServerPlayer tracker) {
-
-            boolean isActive = activeSharingans.getOrDefault(targetPlayer.getUUID(), false);
-            int stage = sharinganStages.getOrDefault(targetPlayer.getUUID(), 1);
-
-            // If the target has their eyes active, secretly send a packet to the new player to sync them up!
-            if (isActive) {
+    public static void syncPlayerData(ServerPlayer target, ServerPlayer receiver) {
+        target.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            if (stats instanceof zyo.narutomod.capability.ShinobiData) {
+                ((zyo.narutomod.capability.ShinobiData) stats).saveNBTData(tag);
                 PacketHandler.INSTANCE.send(
-                        net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> tracker),
-                        new SharinganSyncPacket(targetPlayer.getUUID(), isActive, stage)
+                        PacketDistributor.PLAYER.with(() -> receiver),
+                        new SyncShinobiDataPacket(target.getId(), tag)
                 );
             }
+        });
+    }
+
+    public static void syncPlayerDataToAllTracking(ServerPlayer player) {
+        player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            if (stats instanceof zyo.narutomod.capability.ShinobiData) {
+                ((zyo.narutomod.capability.ShinobiData) stats).saveNBTData(tag);
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                        new SyncShinobiDataPacket(player.getId(), tag)
+                );
+            }
+        });
+    }
+
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getTarget() instanceof ServerPlayer targetPlayer && event.getEntity() instanceof ServerPlayer tracker) {
+            syncPlayerData(targetPlayer, tracker);
         }
     }
 
-    // 3. Passive Chakra Regeneration
     @SubscribeEvent
     public static void onPlayerTick(net.minecraftforge.event.TickEvent.PlayerTickEvent event) {
         if (event.side == net.minecraftforge.fml.LogicalSide.SERVER && event.phase == net.minecraftforge.event.TickEvent.Phase.END) {
             ServerPlayer player = (ServerPlayer) event.player;
 
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                stats.tickCooldowns();
+            });
+
             if (player.getPersistentData().getBoolean("TsukuyomiTrapped")) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                    // Having high Genjutsu points makes the Blindness/Slowness expire faster
-                    // (Note: Minecraft handles effect expiration automatically, but
-                    // this is where you'd add logic to "shake off" effects manually if desired)
+                    // TODO: Genjutsu resistance logic
                 });
             }
 
-            // Minecraft runs at 20 ticks per second.
-            // Using modulo 20 means this code only runs exactly once per second.
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (stats.getClan() == zyo.narutomod.player.Clan.UCHIHA && stats.getSharinganStage() == 0) {
+                    int uchihaTicks = player.getPersistentData().getInt("UchihaTicks");
+                    uchihaTicks++;
+                    player.getPersistentData().putInt("UchihaTicks", uchihaTicks);
+
+                    if (uchihaTicks >= 7200) {
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, 100, 0, false, false));
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.CONFUSION, 200, 0, false, false));
+
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYour eyes feel different..."), true);
+                        player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ELDER_GUARDIAN_CURSE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                        stats.setSharinganStage(1);
+                        stats.unlockJutsu("narutomod:sharingan_root");
+                        stats.setSharinganActive(true);
+
+                        syncPlayerDataToAllTracking(player);
+                    }
+                }
+            });
+
             if (player.tickCount % 20 == 0) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-
                     float currentChakra = stats.getChakra();
-                    float maxChakra = 100.0f; // We can move this to ShinobiData later when players level up!
+                    float maxChakra = stats.getMaxChakra();
+                    boolean needsSync = false;
 
-                    // If they are missing chakra...
-                    if (currentChakra < maxChakra) {
+                    if (currentChakra > maxChakra) {
+                        currentChakra = maxChakra;
+                        stats.setChakra(maxChakra);
+                        needsSync = true;
+                    }
 
-                        // Regenerate 5 chakra per second (Change this number to whatever feels balanced!)
-                        float regenAmount = 5.0f;
-                        float newChakra = Math.min(currentChakra + regenAmount, maxChakra);
+                    if (stats.isSharinganActive()) {
+                        float baseDrain = switch (stats.getSharinganStage()) {
+                            case 1 -> 4.0f;
+                            case 2 -> 8.0f;
+                            case 3 -> 15.0f;
+                            case 4 -> 35.0f;
+                            case 5 -> 15.0f;
+                            case 6 -> 40.0f;
+                            default -> 4.0f;
+                        };
 
-                        stats.setChakra(newChakra);
+                        if (stats.getArchetype() == Archetype.DESTROYER) {
+                            baseDrain *= 1.5f;
+                        }
 
-                        // Send the "Receipt" to the Client so the blue HUD bar visually goes up
-                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
-                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> (net.minecraft.server.level.ServerPlayer) player),
-                                new zyo.narutomod.network.SyncChakraPacket(newChakra)
-                        );
+                        boolean hasSusanoo = player.getPassengers().stream().anyMatch(e -> e instanceof zyo.narutomod.entity.SusanooEntity);
+                        if (hasSusanoo) {
+                            baseDrain += 25.0f;
+                        }
+
+                        float newChakra = currentChakra - baseDrain;
+
+                        if (newChakra <= 0) {
+                            stats.setChakra(0);
+                            stats.setSharinganActive(false);
+
+                            player.removeEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED);
+                            player.removeEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
+
+                            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cChakra exhausted. Sharingan deactivated."), true);
+                        } else {
+                            stats.setChakra(newChakra);
+                        }
+                        needsSync = true;
+
+                    } else if (currentChakra < maxChakra) {
+                        float regenAmount = 5.0f + (stats.getSharinganStage() * 1.5f);
+                        stats.setChakra(Math.min(currentChakra + regenAmount, maxChakra));
+                        needsSync = true;
+                    }
+
+                    if (needsSync) {
+                        syncPlayerDataToAllTracking(player);
                     }
                 });
             }
@@ -85,46 +148,36 @@ public class ServerEvents {
     @SubscribeEvent
     public static void onPlayerAttacked(net.minecraftforge.event.entity.living.LivingAttackEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-            // Ignore damage that shouldn't be dodged
             if (event.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
 
+            if (event.getSource().getEntity() == player) return;
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (stats.isSharinganActive()) {
-                    // 1. Calculate Dodge Chance
                     float dodgeChance = stats.getSharinganStage() * 0.10f;
                     dodgeChance += (stats.getGenjutsuStat() / 10) * 0.02f;
 
                     if (Math.random() < dodgeChance) {
-                        // 2. CANCEL THE DAMAGE
                         event.setCanceled(true);
 
-                        // 3. CALCULATE DASH POSITION (Teleport)
                         double oldX = player.getX();
                         double oldY = player.getY();
                         double oldZ = player.getZ();
 
-                        // Pick a random horizontal direction to "flicker" to (3 blocks away)
                         double angle = Math.random() * Math.PI * 2;
                         double dashDist = 3.0;
                         double newX = oldX + (Math.cos(angle) * dashDist);
                         double newZ = oldZ + (Math.sin(angle) * dashDist);
 
-                        // 4. PERFORM THE TELEPORT
-                        // Using teleportTo ensures the server and client stay in sync
                         player.teleportTo(newX, oldY, newZ);
 
-                        // 5. SPAWN PARTICLES (Server-side)
                         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                            // Particles at the OLD spot (where they were standing)
                             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF,
                                     oldX, oldY + 1, oldZ, 8, 0.1, 0.5, 0.1, 0.02);
 
-                            // Particles at the NEW spot (where they appeared)
                             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF,
                                     newX, oldY + 1, newZ, 8, 0.1, 0.5, 0.1, 0.02);
                         }
 
-                        // 6. SOUND EFFECT
                         player.level().playSound(null, player.blockPosition(),
                                 net.minecraft.sounds.SoundEvents.CHORUS_FRUIT_TELEPORT,
                                 net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.5F);
@@ -137,56 +190,68 @@ public class ServerEvents {
     }
 
     @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (stats.getClan() == zyo.narutomod.player.Clan.CLANLESS && stats.getVillage() == zyo.narutomod.player.Village.NONE) {
+                    zyo.narutomod.config.NarutoConfig.SelectionMode mode = zyo.narutomod.config.NarutoConfig.SELECTION_MODE.get();
+
+                    if (mode == zyo.narutomod.config.NarutoConfig.SelectionMode.MENU_CHOICE) {
+                        zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                                new zyo.narutomod.network.OpenSetupScreenPacket()
+                        );
+                    }
+                }
+
+                syncPlayerDataToAllTracking(player);
+            });
+        }
+    }
+
+    @SubscribeEvent
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
             player.removeEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED);
             player.removeEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
         }
-        activeSharingans.remove(event.getEntity().getUUID());
-        sharinganStages.remove(event.getEntity().getUUID());
     }
 
-    // Add this to your ServerEvents.java
+    @SubscribeEvent
+    public static void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
+        event.getOriginal().reviveCaps();
+
+        event.getOriginal().getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(oldStats -> {
+            event.getEntity().getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(newStats -> {
+                newStats.copyFrom(oldStats);
+            });
+        });
+        event.getOriginal().invalidateCaps();
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (stats.isSharinganActive()) {
+                    stats.setSharinganActive(false);
+                }
+                syncPlayerDataToAllTracking(player);
+            });
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            syncPlayerDataToAllTracking(player);
+        }
+    }
+
     @SubscribeEvent
     public static void onAddReloadListeners(net.minecraftforge.event.AddReloadListenerEvent event) {
-        // Registers our JSON reader to run whenever the server starts or someone types /reload
         event.addListener(new zyo.narutomod.jutsu.JutsuManager());
-        zyo.narutomod.jutsu.JutsuActions.registerAll();
-    }
-
-    // 4. Temporary Admin Command for testing RPG Stats
-    @SubscribeEvent
-    public static void onServerChat(net.minecraftforge.event.ServerChatEvent event) {
-        // Get the raw message typed in chat
-        String message = event.getRawText();
-
-        if (message.startsWith("!stat ")) {
-            // Stop the message from actually showing up in the public chat box
-            event.setCanceled(true);
-
-            net.minecraft.server.level.ServerPlayer player = event.getPlayer();
-
-            try {
-                // Split the message: "!stat" [0], "ninjutsu" [1], "10" [2]
-                String[] parts = message.split(" ");
-                String statType = parts[1].toLowerCase();
-                int level = Integer.parseInt(parts[2]);
-
-                player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                    if (statType.equals("ninjutsu")) {
-                        stats.setNinjutsuStat(level);
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§a[Server] Ninjutsu upgraded to Level " + level));
-                    } else if (statType.equals("genjutsu")) {
-                        stats.setGenjutsuStat(level);
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§a[Server] Genjutsu upgraded to Level " + level));
-                    } else {
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§cUnknown stat! Use 'ninjutsu' or 'genjutsu'."));
-                    }
-                });
-            } catch (Exception e) {
-                // If they type it wrong (like "!stat ninjutsu abc")
-                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§cError: Correct usage is !stat <type> <level> (e.g., !stat ninjutsu 5)"));
-            }
-        }
+        zyo.narutomod.jutsu.JutsuRegistry.registerAll();
+        zyo.narutomod.jutsu.JutsuTreeManager.initializeTrees();
     }
 }

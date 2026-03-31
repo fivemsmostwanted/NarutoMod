@@ -22,8 +22,6 @@ public class SubstitutionLogModel<T extends SubstitutionLogEntity> extends Entit
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
-
-        // YOUR BLOCKBENCH GEOMETRY DATA
         PartDefinition main = partdefinition.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(-5.1724F, -3.8587F, -2.55F, 5.0F, 10.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(2.6724F, 17.8587F, 0.05F));
         PartDefinition leaf_r1 = main.addOrReplaceChild("leaf_r1", CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -1.0F, 0.0F, 2.0F, 2.0F, 0.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.9449F, -1.2826F, 0.1F, 0.0F, 0.0F, -0.1745F));
         PartDefinition branch_r1 = main.addOrReplaceChild("branch_r1", CubeListBuilder.create().texOffs(0, 15).addBox(-0.1F, -0.5F, -0.5F, 2.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-0.1724F, 0.1413F, -0.05F, 0.3491F, 0.0F, 0.0F));
@@ -33,7 +31,7 @@ public class SubstitutionLogModel<T extends SubstitutionLogEntity> extends Entit
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        // Log is static, no animation needed
+        // maybe anim ?
     }
 
     @Override

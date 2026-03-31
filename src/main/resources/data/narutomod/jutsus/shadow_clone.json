@@ -1,0 +1,8 @@
+{
+  "id": 3,
+  "type": "ninjutsu",
+  "name": "Shadow Clone",
+  "chakra_cost": 30.0,
+  "hand_signs": [1, 1, 1],
+  "xp_cost": 2
+}

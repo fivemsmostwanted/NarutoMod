@@ -1,0 +1,17 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"handanim": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 0.0,
+			"bones": {
+				"right_arm": {
+					"rotation": [ -59.2, -16.7, -20.2 ]
+				},
+				"left_arm": {
+					"rotation": [ -59.6, 18.0, 15.2 ]
+				}
+			}
+		}
+	}
+}

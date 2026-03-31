@@ -1,0 +1,27 @@
+{
+  "music.menu": {
+    "replace": true,
+    "sounds": [
+      {
+        "name": "narutomod:main_theme",
+        "stream": true
+      }
+    ]
+  },
+  "handsign": {
+    "category": "player",
+    "sounds": [ "narutomod:handsign" ]
+  },
+  "jutsu_cast": {
+    "category": "player",
+    "sounds": [ "narutomod:jutsu_cast" ]
+  },
+  "jutsu_fail": {
+    "category": "player",
+    "sounds": [ "narutomod:jutsu_fail" ]
+  },
+  "chakra_charge": {
+    "category": "player",
+    "sounds": [ "narutomod:chakra_charge" ]
+  }
+}

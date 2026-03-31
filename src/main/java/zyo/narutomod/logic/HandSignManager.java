@@ -2,48 +2,58 @@ package zyo.narutomod.logic;
 
 import java.util.ArrayList;
 import java.util.List;
+import zyo.narutomod.network.PacketHandler;
+import zyo.narutomod.network.JutsuC2SPacket;
 
 public class HandSignManager {
     public static final List<Integer> currentSequence = new ArrayList<>();
     private static int comboTimer = 0;
-
-    // NEW: The Input Blocker!
     private static int inputCooldown = 0;
 
     public static void addSign(int signId) {
-        // If the cooldown is active, ignore the keystroke entirely
         if (inputCooldown > 0) return;
 
         currentSequence.add(signId);
-        comboTimer = 60;
-
-        // Block all other inputs for 5 ticks (0.25 seconds).
-        // You can increase this to 10 if you want the typing to feel slower/more deliberate.
+        comboTimer = 50;
         inputCooldown = 1;
 
-        System.out.println("Added Sign: " + signId + " | Current Sequence: " + currentSequence);
+        if (net.minecraft.client.Minecraft.getInstance().player != null) {
+            zyo.narutomod.client.PlayerAnimManager.playAnimation(
+                    net.minecraft.client.Minecraft.getInstance().player,
+                    "handanim"
+            );
 
-        zyo.narutomod.network.PacketHandler.INSTANCE.sendToServer(
-                new zyo.narutomod.network.JutsuC2SPacket(currentSequence)
-        );
+            net.minecraft.client.Minecraft.getInstance().player.playSound(zyo.narutomod.sound.ModSounds.HANDSIGN.get(), 1.0F, 1.0F);
+        }
+
+        PacketHandler.INSTANCE.sendToServer(new JutsuC2SPacket(new ArrayList<>(currentSequence)));
     }
 
-    public static java.util.List<Integer> getSigns() {
-        return currentSequence; // or whatever your list variable is called!
+    public static void clearCombo(String reason) {
+        currentSequence.clear();
+        comboTimer = 0;
+
+        if (net.minecraft.client.Minecraft.getInstance().player != null) {
+            zyo.narutomod.client.PlayerAnimManager.stopAnimation(net.minecraft.client.Minecraft.getInstance().player);
+        }
     }
 
     public static void tick() {
-        // Tick down the input blocker
-        if (inputCooldown > 0) {
-            inputCooldown--;
-        }
+        if (inputCooldown > 0) inputCooldown--;
 
         if (comboTimer > 0) {
             comboTimer--;
-            if (comboTimer == 0) {
-                currentSequence.clear();
-                System.out.println("Combo timed out. Sequence cleared.");
+            if (comboTimer == 0 && !currentSequence.isEmpty()) {
+                clearCombo("Timer experied too slow");
             }
         }
+    }
+
+    public static int getComboTimer() {
+        return comboTimer;
+    }
+
+    public static List<Integer> getSigns() {
+        return currentSequence;
     }
 }

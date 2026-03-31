@@ -21,7 +21,28 @@ public class ModEntities {
     public static final RegistryObject<EntityType<SubstitutionLogEntity>> SUBSTITUTION_LOG = ENTITIES.register("substitution_log",
             () -> EntityType.Builder.<SubstitutionLogEntity>of(SubstitutionLogEntity::new, MobCategory.MISC)
                     .sized(1.2F, 1.2F)
-                    .clientTrackingRange(8) // Tells the game to sync position up to 8 blocks away
-                    .updateInterval(2)      // Sends a movement update every 2 ticks (10 times a second)
+                    .clientTrackingRange(8)
+                    .updateInterval(2)
                     .build("substitution_log"));
+
+    public static final RegistryObject<EntityType<CrowCloneEntity>> SHADOW_CLONE = ENTITIES.register("shadow_clone",
+            () -> EntityType.Builder.<CrowCloneEntity>of(CrowCloneEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.8F)
+                    .clientTrackingRange(8)
+                    .build("shadow_clone"));
+
+    public static final RegistryObject<EntityType<ShacklingStakeEntity>> SHACKLING_STAKE = ENTITIES.register("shackling_stake",
+            () -> EntityType.Builder.<ShacklingStakeEntity>of(ShacklingStakeEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 2.0F)
+                    .clientTrackingRange(10)
+                    .updateInterval(20)
+                    .build("shackling_stake"));
+
+    public static final RegistryObject<EntityType<SusanooEntity>> SUSANOO = ENTITIES.register("susanoo",
+            () -> EntityType.Builder.<SusanooEntity>of(SusanooEntity::new, MobCategory.MISC)
+                    .sized(3.0F, 4.0F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .build("susanoo"));
 }

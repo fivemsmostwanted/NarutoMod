@@ -13,7 +13,7 @@ public class ClearHandSignsPacket {
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
-            HandSignManager.currentSequence.clear();
+            HandSignManager.clearCombo("Server Packet Received Jutsu done");
         });
         context.setPacketHandled(true);
     }

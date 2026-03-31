@@ -38,10 +38,6 @@ public class JutsuRegistry {
         }
     }
 
-    // ==========================================
-    // JUTSU LOGIC CLASSES
-    // ==========================================
-
     public static class FireballJutsu extends AbstractJutsu {
         @Override
         public void execute(ServerPlayer player) {

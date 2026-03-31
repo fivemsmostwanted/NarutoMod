@@ -21,7 +21,6 @@ import java.util.Optional;
 
 public class CrosshairRenderer {
     private static final ResourceLocation CROSSHAIR = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/gui/crosshair.png");
-    // Define the custom font location here
     private static final ResourceLocation CUSTOM_FONT = ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "hud_font");
 
     private static float lerpX = -1;
@@ -86,10 +85,8 @@ public class CrosshairRenderer {
             lerpY += (targetY - lerpY) * SMOOTHNESS;
         }
 
-        // --- 1. RENDER CROSSHAIR ---
         graphics.pose().pushPose();
         graphics.pose().translate(lerpX, lerpY, 0);
-
         if (ModClientEvents.isMySharinganActive()) {
             float rotation = (mc.level.getGameTime() + mc.getFrameTime()) * 2.5f;
             graphics.pose().mulPose(Axis.ZP.rotationDegrees(rotation));
@@ -109,15 +106,12 @@ public class CrosshairRenderer {
 
         graphics.pose().popPose();
 
-        // --- 2. RENDER TARGET HEALTH BAR (Pure 2D) ---
         Entity displayTarget = isLocked ? lockedTarget : findTarget(mc);
-
         if (displayTarget instanceof LivingEntity livingTarget) {
             Vec3 headPos = livingTarget.position().add(0, livingTarget.getBbHeight() + 0.3, 0);
             Vector4f headScreenPos = projectToScreen(headPos, mc, width, height);
 
             if (headScreenPos.w() > 0) {
-                // FIX: Force both X and Y to round to the exact same integer pixel to completely eliminate text jitter
                 int hX = Math.round(headScreenPos.x());
                 int hY = Math.round(headScreenPos.y());
 
@@ -125,23 +119,18 @@ public class CrosshairRenderer {
                 float maxHealth = livingTarget.getMaxHealth();
                 float percentage = Math.max(0.0F, Math.min(1.0F, health / maxHealth));
 
-                // --- ULTRA SLEEK DIMENSIONS ---
-                int barWidth = 60;  // Slightly narrower
-                int barHeight = 6;  // Shrunk from 8 down to 6 (very thin!)
+                int barWidth = 60;
+                int barHeight = 6;
                 int fillWidth = (int) (barWidth * percentage);
 
                 int bgColor = 0xFF661A33;
                 int fgColor = 0xFFC82A4D;
 
-                // Draw Background (using the rounded integers)
                 graphics.fill(hX - barWidth / 2, hY - barHeight / 2,
                         hX + barWidth / 2, hY + barHeight / 2, bgColor);
-
-                // Draw Health Fill
                 graphics.fill(hX - barWidth / 2, hY - barHeight / 2,
                         hX - barWidth / 2 + fillWidth, hY + barHeight / 2, fgColor);
 
-                // --- CUSTOM FONT TEXT ---
                 String healthTextRaw = (int)Math.ceil(health) + " / " + (int)maxHealth;
                 net.minecraft.network.chat.Component healthText = net.minecraft.network.chat.Component.literal(healthTextRaw)
                         .withStyle(net.minecraft.network.chat.Style.EMPTY.withFont(CUSTOM_FONT));
@@ -150,18 +139,12 @@ public class CrosshairRenderer {
                         .withStyle(net.minecraft.network.chat.Style.EMPTY.withFont(CUSTOM_FONT));
 
                 graphics.pose().pushPose();
-
-                // Translate using the exact same rounded integers so the text and box are permanently glued together
                 graphics.pose().translate(hX, hY, 0);
 
-                // Scale down slightly more to fit the ultra-thin 6px bar
                 graphics.pose().scale(0.75f, 0.75f, 1.0f);
-
-                // Draw Health Text
                 int textWidth = mc.font.width(healthText);
                 graphics.drawString(mc.font, healthText, -textWidth / 2, -3, 0xFFFFFFFF, false);
 
-                // Draw Name Text above the bar
                 int nameWidth = mc.font.width(nameText);
                 graphics.drawString(mc.font, nameText, -nameWidth / 2, -14, 0xFFFFFFFF, false);
 

@@ -62,13 +62,11 @@ public class NinjaCardScreen extends Screen {
                     case MEDICINE      -> { btnX = this.leftPos + 112; btnY = this.topPos + 141; }
                     case SPEED         -> { btnX = this.leftPos + 112; btnY = this.topPos + 160; }
 
-                    // RIGHT COLUMN (The 3 Stats)
                     case JUTSU_POWER   -> { btnX = this.leftPos + 182; btnY = this.topPos + 13; }
                     case GENJUTSU      -> { btnX = this.leftPos + 182; btnY = this.topPos + 34; }
                     case IQ            -> { btnX = this.leftPos + 182; btnY = this.topPos + 52; }
                 }
 
-                // Actually builds the button using your custom sizes and coordinates
                 this.addRenderableWidget(Button.builder(Component.literal("+"), btn -> {
                     PacketHandler.INSTANCE.sendToServer(new StatUpgradePacket(stat));
                 }).bounds(btnX, btnY, buttonWidth, buttonHeight).build());
@@ -85,8 +83,6 @@ public class NinjaCardScreen extends Screen {
                 int textY = 0;
                 int statValue = 1;
 
-                // Grab the actual numbers from the capability!
-                // need to add the other getters to IShinobiData later
                 switch (stat) {
                     case NINJUTSU -> statValue = stats.getNinjutsuStat();
                     case GENJUTSU -> statValue = stats.getGenjutsuStat();

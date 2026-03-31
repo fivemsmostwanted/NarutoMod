@@ -18,14 +18,12 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 
-//Not sure if this will ever have a use case
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class PlayerAnimManager {
     private static final Map<AbstractClientPlayer, ModifierLayer<IAnimation>> ANIMATION_LAYERS = new IdentityHashMap<>();
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        // Hijacks the vanilla player model and injects a custom animation layer with priority 1000
         PlayerAnimationAccess.REGISTER_ANIMATION_EVENT.register((player, animationStack) -> {
             ModifierLayer<IAnimation> layer = new ModifierLayer<>();
             animationStack.addAnimLayer(1000, layer);

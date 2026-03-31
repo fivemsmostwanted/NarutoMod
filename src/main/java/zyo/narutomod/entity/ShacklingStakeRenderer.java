@@ -20,7 +20,6 @@ public class ShacklingStakeRenderer extends EntityRenderer<ShacklingStakeEntity>
     public void render(ShacklingStakeEntity entity, float entityYaw, float partialTicks, com.mojang.blaze3d.vertex.PoseStack poseStack, net.minecraft.client.renderer.MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // Match the entity's exact rotation so it visually pierces the target
         poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-entity.getYRot()));
         poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(entity.getXRot()));
 

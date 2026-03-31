@@ -119,11 +119,9 @@ public class ActionRequestPacket {
                             existingSusanoo.get().discard();
                             player.displayClientMessage(Component.literal("§8Susanoo Deactivated."), true);
                         } else {
-                            // --- CREATIVE MODE BYPASS ADDED HERE ---
                             boolean isCreative = player.isCreative();
 
                             if (isCreative || stats.getChakra() >= 100.0F) {
-                                // Only deduct chakra if they are NOT in creative mode
                                 if (!isCreative) {
                                     stats.setChakra(stats.getChakra() - 100.0F);
                                 }

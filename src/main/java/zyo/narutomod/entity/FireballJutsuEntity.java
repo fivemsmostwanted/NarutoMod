@@ -48,21 +48,17 @@ public class FireballJutsuEntity extends ThrowableProjectile {
 
         if (this.level().isClientSide) {
             float scale = this.getVisualScale();
-            // Increase density to 12 particles per tick for that "thick" look
             int particleCount = (int) (12 * scale);
 
             for (int i = 0; i < particleCount; i++) {
-                // Tighten the offset so particles stay in a dense core around the fireball
                 double offsetX = (this.random.nextDouble() - 0.5) * (scale * 0.4);
                 double offsetY = (this.random.nextDouble() - 0.5) * (scale * 0.4);
                 double offsetZ = (this.random.nextDouble() - 0.5) * (scale * 0.4);
 
-                // Add a tiny bit of upward drift (0.05) to make the fire look like it's roaring
                 this.level().addParticle(ModParticles.CUSTOM_FLAME.get(),
                         this.getX() + offsetX, this.getY() + offsetY, this.getZ() + offsetZ,
                         0, 0.05, 0);
 
-                // Add smoke that stays very close to the center
                 this.level().addParticle(ParticleTypes.LARGE_SMOKE,
                         this.getX() + offsetX, this.getY() + offsetY, this.getZ() + offsetZ,
                         0, 0.02, 0);
@@ -86,7 +82,6 @@ public class FireballJutsuEntity extends ThrowableProjectile {
                 });
             }
 
-            // ADDED 'true': This boolean tells Minecraft that this explosion causes fire!
             this.level().explode(this, hitPos.x, hitPos.y, hitPos.z, finalRadius[0], true, Level.ExplosionInteraction.MOB);
             this.discard();
         }

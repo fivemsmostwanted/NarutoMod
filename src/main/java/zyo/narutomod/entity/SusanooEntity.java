@@ -40,7 +40,7 @@ public class SusanooEntity extends Mob implements GeoEntity {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
-        this.entityData.define(TIER, 1); // Defaults to Tier 1 (Ribcage)
+        this.entityData.define(TIER, 1);
     }
 
     public int getTier() {
@@ -82,7 +82,6 @@ public class SusanooEntity extends Mob implements GeoEntity {
         super.tick();
 
         if (!this.level().isClientSide) {
-            // Discard instantly if the owner is gone, dead, or the Susanoo gets dismounted
             if (this.owner == null || !this.owner.isAlive() || this.getVehicle() != this.owner) {
                 this.discard();
                 return;

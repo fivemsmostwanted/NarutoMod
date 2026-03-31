@@ -25,7 +25,6 @@ public interface IShinobiData {
     boolean isInKamuiDimension();
     void setInKamuiDimension(boolean inDimension);
 
-    // --- NEW: Mangekyou Variant ---
     String getMsVariant();
     void setMsVariant(String variant);
 

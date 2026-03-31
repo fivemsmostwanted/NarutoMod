@@ -14,7 +14,6 @@ public class KusanagiSasukeItem extends SwordItem {
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        // Sasuke's Chidori Katana effect: Slowness (numbness)
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 2));
         return super.hurtEnemy(stack, target, attacker);
     }

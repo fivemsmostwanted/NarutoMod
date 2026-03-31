@@ -16,13 +16,11 @@ public class ModCreativeTabs {
 
     public static final RegistryObject<CreativeModeTab> NARUTO_TAB = CREATIVE_MODE_TABS.register("naruto_tab",
             () -> CreativeModeTab.builder()
-                    .icon(() -> new ItemStack(ModItems.AKATSUKI_CLOAK.get())) // The icon of the tab
+                    .icon(() -> new ItemStack(ModItems.AKATSUKI_CLOAK.get()))
                     .title(Component.translatable("creativetab.naruto_tab"))
                     .displayItems((parameters, output) -> {
-                        // Add all your items here manually
                         output.accept(ModItems.AKATSUKI_CLOAK.get());
                         output.accept(ModItems.KUSANAGI_SASUKE.get());
-                        // output.accept(ModItems.FIREBALL_SCROLL.get());
                     })
                     .build());
 

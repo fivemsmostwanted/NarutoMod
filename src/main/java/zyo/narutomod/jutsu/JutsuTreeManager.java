@@ -48,7 +48,7 @@ public class JutsuTreeManager {
         JutsuNode sharinganRoot = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "sharingan_root"), 0, 2)
                 .requireClan(Clan.UCHIHA)
                 .requireSharingan(0)
-                .setXpCost(999) // Unlocked via event
+                .setXpCost(999)
                 .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_1.png"))
                 .setLockedIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_locked.png"));
         ROOT_NODES.add(sharinganRoot);
@@ -75,7 +75,7 @@ public class JutsuTreeManager {
                 .requireClan(Clan.UCHIHA)
                 .requireSharingan(3)
                 .setXpCost(30)
-                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_3.png")); // Update texture path when you have it
+                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_3.png"));
         ALL_NODES.put(mangekyou.getJutsuId(), mangekyou);
 
         JutsuNode ems = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "eternal_mangekyou"), 4, 2)
@@ -83,7 +83,7 @@ public class JutsuTreeManager {
                 .requireClan(Clan.UCHIHA)
                 .requireSharingan(4)
                 .setXpCost(50)
-                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_3.png")); // Update texture path when you have it
+                .setCustomIcon(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "textures/hud/sharingan_3.png"));
         ALL_NODES.put(ems.getJutsuId(), ems);
 
         JutsuNode crowClone = new JutsuNode(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, "crow_clone_feint"), 2, 1)

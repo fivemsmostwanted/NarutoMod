@@ -28,7 +28,6 @@ public class ModParticles {
 
     @SubscribeEvent
     public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
-        // Switch from FlameParticle.Provider to your new FireballFlameParticle.Provider
         event.registerSpriteSet(CUSTOM_FLAME.get(), FireballFlameParticle.Provider::new);
         event.registerSpriteSet(CUSTOM_CHAKRA.get(), net.minecraft.client.particle.FlameParticle.Provider::new);
     }

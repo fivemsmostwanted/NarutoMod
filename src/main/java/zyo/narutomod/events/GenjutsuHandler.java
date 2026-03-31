@@ -37,7 +37,6 @@ public class GenjutsuHandler {
             }
         }
 
-        // --- 2. Tsukuyomi Genjutsu Logic ---
         if (entity.getPersistentData().getBoolean("TsukuyomiTrapped")) {
             int tsukuyomiTicks = entity.getPersistentData().getInt("TsukuyomiTicks");
 

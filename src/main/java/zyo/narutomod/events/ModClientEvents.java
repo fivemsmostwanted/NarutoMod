@@ -12,7 +12,7 @@ import zyo.narutomod.NarutoMod;
 import zyo.narutomod.keys.HandSignKeys;
 import zyo.narutomod.logic.HandSignManager;
 import zyo.narutomod.network.PacketHandler;
-import zyo.narutomod.network.ActionRequestPacket; // Added the unified packet
+import zyo.narutomod.network.ActionRequestPacket;
 
 @Mod.EventBusSubscriber(modid = NarutoMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ModClientEvents {
@@ -32,14 +32,14 @@ public class ModClientEvents {
     };
 
     private static final ResourceLocation[] HANDSIGN_ICONS = {
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/tiger.png"),  // SIGN_1
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/snake.png"),  // SIGN_2
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/ram.png"),    // SIGN_3
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/monkey.png"), // SIGN_4
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/horse.png"),  // SIGN_5
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/rat.png"),    // SIGN_6
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/boar.png"),   // SIGN_7
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/hare.png")    // SIGN_8 (Hidden under F key)
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/tiger.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/snake.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/ram.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/monkey.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/horse.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/rat.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/boar.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/gui/hare.png")
     };
 
     public static boolean isMySharinganActive() {
@@ -149,7 +149,6 @@ public class ModClientEvents {
                     wasSprinting = true;
                 }
             } else {
-                // If we stop sprinting OR we start attacking, stop the run animation
                 if (wasSprinting) {
                     zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
                     wasSprinting = false;
@@ -256,10 +255,9 @@ public class ModClientEvents {
                     HandSignKeys.SIGN_7, HandSignKeys.SIGN_8
             };
 
-            // --- HUD RESIZING VARIABLES ---
-            int slotSpacing = 22; // Shrunk from 26 to bring them closer
+            int slotSpacing = 22;
             int startX = (screenWidth / 2) - (handSignKeys.length * slotSpacing / 2);
-            int startY = screenHeight - 22; // Lowered slightly to match the smaller size
+            int startY = screenHeight - 22;
 
             // 1. RENDER HOTBAR
             for (int i = 0; i < handSignKeys.length; i++) {
@@ -268,7 +266,6 @@ public class ModClientEvents {
                 int centerY = startY + 10;
 
                 if (i == 7) {
-                    // 'F' KEY (Sharingan)
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFFFF0000); // Shrunk radius 11 -> 10
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, isMySharinganActive() ? 0xFF000000 : 0x55000000); // Shrunk radius 10 -> 9
 
@@ -278,20 +275,18 @@ public class ModClientEvents {
 
                         com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                         com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-                        // Padded image: Size shrunk to 14x14, offsets increased by +3 to center it safely inside the circle
                         graphics.blit(EYE_ICONS[stage], currentX + 3, startY + 3, 14, 14, 0, 0, 64, 64, 64, 64);
                     } else {
                         graphics.drawString(mc.font, "F", centerX - (mc.font.width("F") / 2), startY - 10, 0xFFFFFF, false);
                     }
 
                 } else {
-                    // STANDARD HAND SIGNS
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFFFFFFFF);
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, 0x55000000);
 
                     com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                     com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-                    // Padded image: Size shrunk to 14x14, offsets increased by +3
+
                     graphics.blit(HANDSIGN_ICONS[i], currentX + 3, startY + 3, 14, 14, 0, 0, 256, 256, 256, 256);
 
                     String label = handSignKeys[i].getTranslatedKeyMessage().getString().toUpperCase();
@@ -311,13 +306,8 @@ public class ModClientEvents {
                     int centerX = currentX + 10;
                     int centerY = comboStartY + 10;
 
-                    // 1. BASE: Gold circle (creates the radius 10 border)
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 10, 0xFFFFD700);
-
-                    // 2. MIDDLE: Solid White (blocks the gold from bleeding into the center)
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, 0xFFFFFFFF);
-
-                    // 3. TOP: Transparent Black (tints the white to match the exact grey of the hotbar)
                     zyo.narutomod.util.RenderUtils.drawCircle(graphics, centerX, centerY, 9, 0x55000000);
 
                     int signId = currentCombo.get(i);

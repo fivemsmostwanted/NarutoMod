@@ -32,7 +32,6 @@ public class ShacklingStakeModel extends EntityModel<ShacklingStakeEntity> {
 
     @Override
     public void setupAnim(ShacklingStakeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        // No animation needed, it's a rigid spike
     }
 
     @Override

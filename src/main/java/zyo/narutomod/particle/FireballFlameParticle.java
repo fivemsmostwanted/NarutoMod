@@ -10,24 +10,20 @@ public class FireballFlameParticle extends TextureSheetParticle {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed);
         this.friction = 0.96F;
         this.speedUpWhenYMotionIsBlocked = true;
-        this.hasPhysics = false; // Fire shouldn't bounce off walls clunkily
+        this.hasPhysics = false;
         this.sprites = spriteSet;
-
-        // --- THIS MAKES IT LOOK LIKE THE MOD ---
-        this.quadSize *= 2.5F; // Make individual flames larger
-        this.lifetime = 10 + this.random.nextInt(12); // Short life so they don't linger too far back
+        this.quadSize *= 2.5F;
+        this.lifetime = 10 + this.random.nextInt(12);
         this.setSpriteFromAge(spriteSet);
     }
 
     @Override
     public ParticleRenderType getRenderType() {
-        // PARTICLE_SHEET_TRANSLUCENT is key for that soft, non-blocky look
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
     @Override
     public int getLightColor(float partialTick) {
-        // Forces the particle to always glow at maximum brightness (Fire logic)
         return 15728880;
     }
 
@@ -35,7 +31,6 @@ public class FireballFlameParticle extends TextureSheetParticle {
     public void tick() {
         super.tick();
         this.setSpriteFromAge(this.sprites);
-        // Fade out at the end of life
         this.alpha = 1.0F - ((float)this.age / (float)this.lifetime);
     }
 

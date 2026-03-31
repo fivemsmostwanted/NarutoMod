@@ -13,6 +13,7 @@ public class CharacterCreationScreen extends Screen {
 
     private Clan selectedClan = Clan.CLANLESS;
     private Village selectedVillage = Village.NONE;
+    private String selectedNature = "Fire"; // Default
 
     private Button clanButton;
     private Button villageButton;
@@ -38,10 +39,16 @@ public class CharacterCreationScreen extends Screen {
             button.setMessage(Component.literal("Village: " + selectedVillage.name()));
         }).bounds(startX, startY + 30, 200, 20).build());
 
+        this.addRenderableWidget(Button.builder(Component.literal("Nature: " + selectedNature), button -> {
+            cycleNature();
+            button.setMessage(Component.literal("Nature: " + selectedNature));
+        }).bounds(startX, startY + 60, 200, 20).build());
+
         this.addRenderableWidget(Button.builder(Component.literal("§aConfirm Journey"), button -> {
-            PacketHandler.INSTANCE.sendToServer(new SetPlayerFactionPacket(this.selectedClan, this.selectedVillage));
-            this.onClose(); // Close the screen
-        }).bounds(startX, startY + 70, 200, 20).build());
+            // Update your Packet to accept the nature string
+            PacketHandler.INSTANCE.sendToServer(new SetPlayerFactionPacket(this.selectedClan, this.selectedVillage, this.selectedNature));
+            this.onClose();
+        }).bounds(startX, startY + 90, 200, 20).build());
     }
 
     private void cycleClan() {
@@ -54,6 +61,12 @@ public class CharacterCreationScreen extends Screen {
         Village[] villages = Village.values();
         int nextOrdinal = (this.selectedVillage.ordinal() + 1) % villages.length;
         this.selectedVillage = villages[nextOrdinal];
+    }
+
+    private void cycleNature() {
+        String[] natures = {"Fire", "Wind", "Lightning", "Earth", "Water"};
+        int currentIndex = java.util.Arrays.asList(natures).indexOf(selectedNature);
+        selectedNature = natures[(currentIndex + 1) % natures.length];
     }
 
     @Override

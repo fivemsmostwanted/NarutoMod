@@ -1,0 +1,12 @@
+{
+  "id": 12,
+  "nature": "lightning",
+  "type": "ninjutsu",
+  "name": "Lightning Release",
+  "parent": "narutomod:root_ninjutsu",
+  "chakra_cost": 0.0,
+  "xp_cost": 0,
+  "grid_x": 1,
+  "grid_y": 4,
+  "custom_icon": "narutomod:textures/gui/jutsus/nature_lightning.png"
+}

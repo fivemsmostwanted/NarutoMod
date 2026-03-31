@@ -20,6 +20,10 @@ public class JutsuManager extends SimpleJsonResourceReloadListener {
         super(GSON, "jutsus");
     }
 
+    public static Map<ResourceLocation, JutsuData> getLoadedJutsus() {
+        return LOADED_JUTSUS;
+    }
+
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> jsonMap, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         LOADED_JUTSUS.clear();

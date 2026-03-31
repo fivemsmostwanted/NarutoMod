@@ -4,5 +4,10 @@
   "type": "dojutsu",
   "name": "Susanoo: Humanoid",
   "chakra_cost": 100.0,
-  "xp_cost": 65
+  "xp_cost": 65,
+  "parent": "narutomod:susanoo_skeletal",
+  "grid_x": 6,
+  "grid_y": 0,
+  "required_sharingan": 4,
+  "required_clan": "UCHIHA"
 }

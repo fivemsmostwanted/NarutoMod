@@ -1,0 +1,12 @@
+{
+  "id": 11,
+  "nature": "wind",
+  "type": "ninjutsu",
+  "name": "Wind Release",
+  "parent": "narutomod:root_ninjutsu",
+  "chakra_cost": 0.0,
+  "xp_cost": 0,
+  "grid_x": 1,
+  "grid_y": 3,
+  "custom_icon": "narutomod:textures/gui/jutsus/nature_wind.png"
+}

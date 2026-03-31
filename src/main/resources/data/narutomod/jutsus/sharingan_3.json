@@ -3,6 +3,10 @@
   "nature": "yin",
   "type": "dojutsu",
   "name": "3 Tomoe Sharingan",
+  "parent": "narutomod:sharingan_2",
   "chakra_cost": 0.0,
-  "xp_cost": 0
+  "xp_cost": 15,
+  "grid_x": 3,
+  "grid_y": -2,
+  "required_sharingan": 2
 }

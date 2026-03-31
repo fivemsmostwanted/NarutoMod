@@ -2,6 +2,7 @@ package zyo.narutomod.events;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -9,6 +10,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import zyo.narutomod.NarutoMod;
+import zyo.narutomod.capability.ShinobiDataProvider;
 import zyo.narutomod.keys.HandSignKeys;
 import zyo.narutomod.logic.HandSignManager;
 import zyo.narutomod.network.PacketHandler;
@@ -156,22 +158,24 @@ public class ModClientEvents {
             }
 
             while (HandSignKeys.SIGN_8.consumeClick()) {
-                player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     if (stats.isSharinganActive()) {
-                        int currentStage = stats.getSharinganStage();
-                        if (currentStage >= 3) {
-                            int maxAllowedStage = 3;
-                            if (stats.hasJutsu("narutomod:rinnegan")) maxAllowedStage = 6;
-                            else if (stats.hasJutsu("narutomod:eternal_mangekyou")) maxAllowedStage = 5;
-                            else if (stats.hasJutsu("narutomod:mangekyou_sharingan")) maxAllowedStage = 4;
+                        int current = stats.getSharinganStage();
+                        int highestTomoe = 1;
+                        if (stats.hasJutsu("narutomod:sharingan_3")) highestTomoe = 3;
+                        else if (stats.hasJutsu("narutomod:sharingan_2")) highestTomoe = 2;
 
-                            int nextStage = currentStage + 1;
-                            if (nextStage > maxAllowedStage) nextStage = 3;
+                        int next;
+                        if (current <= 3) {
+                            if (stats.hasJutsu("narutomod:eternal_mangekyou")) next = 5;
+                            else if (stats.hasJutsu("narutomod:mangekyou_sharingan")) next = 4;
+                            else next = highestTomoe;
+                        } else {
+                            next = highestTomoe;
+                        }
 
-                            if (nextStage != currentStage) {
-                                PacketHandler.INSTANCE.sendToServer(new ActionRequestPacket(ActionRequestPacket.Action.EVOLVE_SHARINGAN, nextStage));
-                                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§4Eyes Evolving..."), true);
-                            }
+                        if (next != current) {
+                            PacketHandler.INSTANCE.sendToServer(new ActionRequestPacket(ActionRequestPacket.Action.EVOLVE_SHARINGAN, next));
                         }
                     }
                 });

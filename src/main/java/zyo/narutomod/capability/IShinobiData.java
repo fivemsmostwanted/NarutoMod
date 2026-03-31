@@ -52,6 +52,9 @@ public interface IShinobiData {
     int getNatureMastery(String nature);
     void addNatureMastery(String nature, int amount);
 
+    int getExperience();
+    void setExperience(int xp);
+
     int getMsBleedTimer();
     void setMsBleedTimer(int ticks);
 

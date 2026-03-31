@@ -1,9 +1,9 @@
 {
   "id": 900,
-  "nature": "yin",
   "type": "dojutsu",
-  "name": "Sharingan Awakening",
-  "chakra_cost": 0.0,
+  "name": "The Uchiha Bloodline",
   "xp_cost": 0,
-  "hand_signs": []
+  "grid_x": 0,
+  "grid_y": -2,
+  "custom_icon": "narutomod:textures/hud/sharingan_locked.png"
 }

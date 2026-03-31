@@ -1,0 +1,12 @@
+{
+  "id": 105,
+  "type": "genjutsu",
+  "name": "Crow Clone",
+  "parent": "narutomod:sharingan_3",
+  "chakra_cost": 30.0,
+  "hand_signs": [2, 4, 1],
+  "xp_cost": 15,
+  "grid_x": 4,
+  "grid_y": -1,
+  "required_sharingan": 3
+}

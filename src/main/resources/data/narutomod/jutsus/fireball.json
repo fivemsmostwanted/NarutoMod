@@ -5,5 +5,9 @@
   "name": "Fireball Jutsu",
   "chakra_cost": 25.0,
   "hand_signs": [1, 2, 3],
-  "xp_cost": 2
+  "xp_cost": 2,
+  "parent": "narutomod:root_fire",
+  "grid_x": 2,
+  "grid_y": 2,
+  "required_level": 5
 }

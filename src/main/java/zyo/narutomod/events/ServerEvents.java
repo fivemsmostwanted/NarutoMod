@@ -68,7 +68,7 @@ public class ServerEvents {
                     uchihaTicks++;
                     player.getPersistentData().putInt("UchihaTicks", uchihaTicks);
 
-                    if (uchihaTicks >= 7200) {
+                    if (uchihaTicks >= 1000) {
                         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, 100, 0, false, false));
                         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.CONFUSION, 200, 0, false, false));
 
@@ -77,8 +77,10 @@ public class ServerEvents {
 
                         stats.setSharinganStage(1);
                         stats.unlockJutsu("narutomod:sharingan_root");
-                        stats.setSharinganActive(true);
+                        stats.unlockJutsu("narutomod:sharingan_1");
 
+                        stats.setChakra(stats.getMaxChakra());
+                        stats.setSharinganActive(true);
                         syncPlayerDataToAllTracking(player);
                     }
                 }
@@ -192,6 +194,7 @@ public class ServerEvents {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            zyo.narutomod.jutsu.JutsuTreeManager.initializeTrees();
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (stats.getClan() == zyo.narutomod.player.Clan.CLANLESS && stats.getVillage() == zyo.narutomod.player.Village.NONE) {
                     zyo.narutomod.config.NarutoConfig.SelectionMode mode = zyo.narutomod.config.NarutoConfig.SELECTION_MODE.get();

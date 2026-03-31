@@ -1,41 +1,40 @@
 package zyo.narutomod.jutsu;
 
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraftforge.network.PacketDistributor;
+import zyo.narutomod.NarutoMod;
 import zyo.narutomod.capability.ShinobiDataProvider;
-import zyo.narutomod.player.Archetype;
 import zyo.narutomod.entity.*;
-import zyo.narutomod.network.PacketHandler;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class JutsuRegistry {
-    public static final Map<Integer, AbstractJutsu> JUTSUS = new HashMap<>();
-    public static final Map<Integer, AbstractJutsu> INSTANT_JUTSUS = new HashMap<>();
+    public static final Map<ResourceLocation, AbstractJutsu> JUTSUS = new HashMap<>();
+    public static final Map<ResourceLocation, AbstractJutsu> INSTANT_JUTSUS = new HashMap<>();
 
     public static void registerAll() {
-        JUTSUS.put(1, new FireballJutsu());
-        JUTSUS.put(2, new SubstitutionJutsu());
-        JUTSUS.put(3, new ShadowCloneJutsu());
+        JUTSUS.put(rl("fireball"), new FireballJutsu());
+        JUTSUS.put(rl("substitution"), new SubstitutionJutsu());
+        JUTSUS.put(rl("shadow_clone"), new ShadowCloneJutsu());
 
-        INSTANT_JUTSUS.put(1, new ParalysisGenjutsu());
-        INSTANT_JUTSUS.put(2, new CrowFeintPrepJutsu());
+        INSTANT_JUTSUS.put(rl("shackling_stakes"), new ParalysisGenjutsu());
+        INSTANT_JUTSUS.put(rl("crow_clone_feint"), new CrowFeintPrepJutsu());
     }
 
-    public static void executeInstant(int slotId, ServerPlayer player) {
-        AbstractJutsu action = INSTANT_JUTSUS.get(slotId);
-        if (action != null) {
-            action.execute(player);
-        } else {
-            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§7No Genjutsu equipped in slot " + slotId), true);
-        }
+    private static ResourceLocation rl(String path) {
+        return ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, path);
+    }
+
+    public static void executeInstant(ResourceLocation id, ServerPlayer player) {
+        AbstractJutsu action = INSTANT_JUTSUS.get(id);
+        if (action != null) action.execute(player);
     }
 
     public static class FireballJutsu extends AbstractJutsu {
@@ -60,7 +59,15 @@ public class JutsuRegistry {
             double newX = oldX + (Math.cos(angle) * radius);
             double newZ = oldZ + (Math.sin(angle) * radius);
 
-            player.teleportTo(newX, oldY, newZ);
+            double safeY = oldY;
+            net.minecraft.core.BlockPos targetPos = new net.minecraft.core.BlockPos((int)newX, (int)oldY, (int)newZ);
+
+            while (!player.level().getBlockState(targetPos).isAir() && targetPos.getY() < player.level().getMaxBuildHeight()) {
+                targetPos = targetPos.above();
+                safeY = targetPos.getY();
+            }
+
+            player.teleportTo(newX, safeY, newZ);
 
             SubstitutionLogEntity log = new SubstitutionLogEntity(ModEntities.SUBSTITUTION_LOG.get(), player.level());
             log.moveTo(oldX, oldY, oldZ, player.getYRot(), 0);
@@ -70,7 +77,7 @@ public class JutsuRegistry {
 
             if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.POOF, oldX, oldY + 1, oldZ, 15, 0.2, 0.5, 0.2, 0.05);
-                serverLevel.sendParticles(ParticleTypes.POOF, newX, oldY + 1, newZ, 15, 0.2, 0.5, 0.2, 0.05);
+                serverLevel.sendParticles(ParticleTypes.POOF, newX, safeY + 1, newZ, 15, 0.2, 0.5, 0.2, 0.05);
                 player.level().playSound(null, player.blockPosition(), SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
             }
         }

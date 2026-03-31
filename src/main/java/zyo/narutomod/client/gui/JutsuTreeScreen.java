@@ -47,7 +47,18 @@ public class JutsuTreeScreen extends Screen {
     private boolean canSeeNodeBranch(IShinobiData stats, JutsuNode node) {
         if (node.getRequiredClan() != zyo.narutomod.player.Clan.CLANLESS && stats.getClan() != node.getRequiredClan()) return false;
         if (node.getRequiredVillage() != zyo.narutomod.player.Village.NONE && stats.getVillage() != node.getRequiredVillage()) return false;
-        if (node.getRequiredSharinganStage() > 0 && stats.getSharinganStage() < node.getRequiredSharinganStage()) return false;
+
+        if (node.getParent() != null) {
+            if (!stats.hasJutsu(node.getParent().getJutsuId().toString())) {
+                return false;
+            }
+        }
+
+        if ((node.getJutsuId().getPath().contains("sharingan") || node.getRequiredSharinganStage() > 0)
+                && stats.getClan() != zyo.narutomod.player.Clan.UCHIHA) {
+            return false;
+        }
+
         return true;
     }
 
@@ -115,12 +126,11 @@ public class JutsuTreeScreen extends Screen {
     }
 
     private void drawConnectionsRecursive(GuiGraphics graphics, JutsuNode node, IShinobiData stats) {
-        int startX = (node.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
-        int startY = (node.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
-
         for (JutsuNode child : node.getChildren()) {
             if (!canSeeNodeBranch(stats, child)) continue;
 
+            int startX = (node.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
+            int startY = (node.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
             int endX = (child.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
             int endY = (child.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
             int midX = startX + (endX - startX) / 2;
@@ -128,25 +138,32 @@ public class JutsuTreeScreen extends Screen {
             graphics.fill(startX, startY - 3, midX, startY + 3, 0xFF000000);
             graphics.fill(midX - 3, Math.min(startY, endY) - 3, midX + 3, Math.max(startY, endY) + 3, 0xFF000000);
             graphics.fill(midX, endY - 3, endX, endY + 3, 0xFF000000);
+
+            graphics.fill(startX, startY - 1, midX, startY + 1, 0xFF555555);
+            graphics.fill(midX - 1, Math.min(startY, endY) - 1, midX + 1, Math.max(startY, endY) + 1, 0xFF555555);
+            graphics.fill(midX, endY - 1, endX, endY + 1, 0xFF555555);
         }
 
         for (JutsuNode child : node.getChildren()) {
             if (!canSeeNodeBranch(stats, child)) continue;
+            if (!stats.hasJutsu(child.getJutsuId().toString())) continue;
 
+            int startX = (node.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
+            int startY = (node.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
             int endX = (child.getGridX() * GRID_SPACING) + (NODE_SIZE / 2);
             int endY = (child.getGridY() * GRID_SPACING) + (NODE_SIZE / 2);
             int midX = startX + (endX - startX) / 2;
 
-            int lineColor = stats.hasJutsu(child.getJutsuId().toString()) ? 0xFF00BFFF : 0xFF555555;
-
-            graphics.fill(startX, startY - 1, midX, startY + 1, lineColor);
-            graphics.fill(midX - 1, Math.min(startY, endY) - 1, midX + 1, Math.max(startY, endY) + 1, lineColor);
-            graphics.fill(midX, endY - 1, endX, endY + 1, lineColor);
+            int blue = 0xFF00BFFF;
+            graphics.fill(startX, startY - 1, midX, startY + 1, blue);
+            graphics.fill(midX - 1, Math.min(startY, endY) - 1, midX + 1, Math.max(startY, endY) + 1, blue);
+            graphics.fill(midX, endY - 1, endX, endY + 1, blue);
         }
 
         for (JutsuNode child : node.getChildren()) {
-            if (!canSeeNodeBranch(stats, child)) continue;
-            drawConnectionsRecursive(graphics, child, stats);
+            if (canSeeNodeBranch(stats, child)) {
+                drawConnectionsRecursive(graphics, child, stats);
+            }
         }
     }
 

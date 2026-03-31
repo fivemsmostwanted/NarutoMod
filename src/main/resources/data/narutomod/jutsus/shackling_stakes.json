@@ -2,6 +2,10 @@
   "id": 4,
   "type": "genjutsu",
   "name": "Shackling Stakes",
+  "parent": "narutomod:sharingan_3",
   "chakra_cost": 45.0,
-  "xp_cost": 12
+  "xp_cost": 12,
+  "grid_x": 4,
+  "grid_y": -3,
+  "required_sharingan": 3
 }

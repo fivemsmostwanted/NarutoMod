@@ -4,5 +4,10 @@
   "type": "dojutsu",
   "name": "Susanoo: Skeletal",
   "chakra_cost": 75.0,
-  "xp_cost": 50
+  "xp_cost": 50,
+  "parent": "narutomod:susanoo",
+  "grid_x": 5,
+  "grid_y": 0,
+  "required_sharingan": 4,
+  "required_clan": "UCHIHA"
 }

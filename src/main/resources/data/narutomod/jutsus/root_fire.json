@@ -1,0 +1,12 @@
+{
+  "id": 10,
+  "nature": "fire",
+  "type": "ninjutsu",
+  "name": "Fire Release",
+  "parent": "narutomod:root_ninjutsu",
+  "chakra_cost": 0.0,
+  "xp_cost": 0,
+  "grid_x": 1,
+  "grid_y": 2,
+  "custom_icon": "narutomod:textures/gui/jutsus/nature_fire.png"
+}

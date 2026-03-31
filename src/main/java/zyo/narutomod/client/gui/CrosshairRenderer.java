@@ -205,13 +205,22 @@ public class CrosshairRenderer {
 
             if (hitResult.isPresent()) {
                 double distToEntity = eyePos.distanceToSqr(hitResult.get());
-                if (distToEntity < closestDistance) {
-                    closestEntity = entity;
-                    closestDistance = distToEntity;
+                net.minecraft.world.level.ClipContext context = new net.minecraft.world.level.ClipContext(
+                        eyePos, hitResult.get(),
+                        net.minecraft.world.level.ClipContext.Block.VISUAL,
+                        net.minecraft.world.level.ClipContext.Fluid.NONE,
+                        mc.player
+                );
+                HitResult blockHit = mc.level.clip(context);
+
+                if (blockHit.getType() == HitResult.Type.MISS) {
+                    if (distToEntity < closestDistance) {
+                        closestEntity = entity;
+                        closestDistance = distToEntity;
+                    }
                 }
             }
         }
-
         return closestEntity;
     }
 

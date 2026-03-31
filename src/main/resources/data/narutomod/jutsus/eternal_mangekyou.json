@@ -3,6 +3,10 @@
   "nature": "none",
   "type": "dojutsu",
   "name": "Eternal Mangekyou",
+  "parent": "narutomod:mangekyou_sharingan",
   "chakra_cost": 0.0,
-  "xp_cost": 50
+  "xp_cost": 50,
+  "grid_x": 5,
+  "grid_y": -2,
+  "required_sharingan": 4
 }

@@ -26,9 +26,8 @@ public class FireballJutsuEntity extends ThrowableProjectile {
         if (!level.isClientSide && shooter instanceof net.minecraft.world.entity.player.Player player) {
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 int ninjutsuLevel = stats.getNinjutsuStat();
-                float visualScale = 1.0F + (ninjutsuLevel * 0.1F);
-
-                this.entityData.set(FIREBALL_SCALE, Math.min(visualScale, 4.0F));
+                float visualScale = 1.0F + (ninjutsuLevel * 0.025F);
+                this.entityData.set(FIREBALL_SCALE, Math.min(visualScale, 30.0F));
             });
         }
     }
@@ -48,7 +47,7 @@ public class FireballJutsuEntity extends ThrowableProjectile {
 
         if (this.level().isClientSide) {
             float scale = this.getVisualScale();
-            int particleCount = (int) (12 * scale);
+            int particleCount = Math.min((int) (12 * scale), 150);
 
             for (int i = 0; i < particleCount; i++) {
                 double offsetX = (this.random.nextDouble() - 0.5) * (scale * 0.4);
@@ -77,8 +76,8 @@ public class FireballJutsuEntity extends ThrowableProjectile {
             if (this.getOwner() instanceof net.minecraft.world.entity.player.Player player) {
                 player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                     int ninjutsuLevel = stats.getNinjutsuStat();
-                    float scaledRadius = 3.0F + (ninjutsuLevel * 0.5F);
-                    finalRadius[0] = Math.min(scaledRadius, 10.0F);
+                    float scaledRadius = 3.0F + (ninjutsuLevel * 0.015F);
+                    finalRadius[0] = Math.min(scaledRadius, 20.0F);
                 });
             }
 

@@ -1,0 +1,12 @@
+{
+  "id": 14,
+  "nature": "water",
+  "type": "ninjutsu",
+  "name": "Water Release",
+  "parent": "narutomod:root_ninjutsu",
+  "chakra_cost": 0.0,
+  "xp_cost": 0,
+  "grid_x": 1,
+  "grid_y": 6,
+  "custom_icon": "narutomod:textures/gui/jutsus/nature_water.png"
+}

@@ -11,6 +11,7 @@ import java.util.Map;
 public class ShinobiData implements IShinobiData {
     private float chakra = 100.0f;
     private int sharinganStage = 0;
+    private float permanentChakraBonus = 0.0f;
     private String msVariant = "none";
     private boolean sharinganActive = false;
     private boolean inKamui = false;
@@ -54,6 +55,7 @@ public class ShinobiData implements IShinobiData {
 
     @Override public Village getVillage() { return village; }
     @Override public void setVillage(Village village) { this.village = village; }
+
     @Override public Map<String, Integer> getActiveCooldowns() { return this.activeCooldowns; }
 
     private int msBleedTimer = 0;
@@ -62,6 +64,10 @@ public class ShinobiData implements IShinobiData {
     @Override public void setMsBleedTimer(int ticks) { this.msBleedTimer = ticks; }
 
     @Override public java.util.List<String> getUnlockedJutsus() { return this.unlockedJutsus; }
+
+    private int experience = 0;
+    @Override public int getExperience() { return this.experience; }
+    @Override public void setExperience(int xp) { this.experience = xp; }
 
     @Override
     public void setCooldown(String jutsuId, int ticks) {
@@ -95,16 +101,11 @@ public class ShinobiData implements IShinobiData {
 
     @Override
     public float getMaxChakra() {
-        float baseMax = switch (this.sharinganStage) {
-            case 1 -> 100.0f;
-            case 2 -> 250.0f;
-            case 3 -> 500.0f;
-            case 4 -> 750.0f;
-            case 5 -> 1000.0f;
-            case 6 -> 1500.0f;
-            default -> 100.0f;
-        };
-        return baseMax + (this.ninjutsuStat * 15.0f);
+        return 100.0f + this.permanentChakraBonus + (this.ninjutsuStat * 15.0f);
+    }
+
+    public void addPermanentChakra(float amount) {
+        this.permanentChakraBonus += amount;
     }
 
     @Override
@@ -154,6 +155,8 @@ public class ShinobiData implements IShinobiData {
         compound.putString("PlayerClan", clan.name());
         compound.putString("PlayerArchetype", archetype.name());
         compound.putString("PlayerVillage", village.name());
+        compound.putInt("ShinobiExperience", this.experience);
+        compound.putFloat("PermanentChakraBonus", this.permanentChakraBonus);
 
         net.minecraft.nbt.ListTag jutsuList = new net.minecraft.nbt.ListTag();
         for (String jutsu : unlockedJutsus) {
@@ -185,6 +188,7 @@ public class ShinobiData implements IShinobiData {
         ninjutsuStat = compound.getInt("ninjutsuStat");
         genjutsuStat = compound.getInt("genjutsuStat");
         cloneInfusionReady = compound.getBoolean("CloneInfusionReady");
+        permanentChakraBonus = compound.getFloat("PermanentChakraBonus");
 
         if (compound.contains("PlayerClan")) {
             try {
@@ -232,6 +236,10 @@ public class ShinobiData implements IShinobiData {
             for (String key : cooldownTag.getAllKeys()) {
                 this.activeCooldowns.put(key, cooldownTag.getInt(key));
             }
+        }
+
+        if (compound.contains("ShinobiExperience")) {
+            this.experience = compound.getInt("ShinobiExperience");
         }
     }
 }

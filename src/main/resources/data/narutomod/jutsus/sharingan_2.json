@@ -1,8 +1,12 @@
 {
-  "id": 901,
+  "id": 902,
   "nature": "yin",
   "type": "dojutsu",
   "name": "2 Tomoe Sharingan",
+  "parent": "narutomod:sharingan_1",
   "chakra_cost": 0.0,
-  "xp_cost": 0
+  "xp_cost": 10,
+  "grid_x": 2,
+  "grid_y": -2,
+  "required_sharingan": 1
 }

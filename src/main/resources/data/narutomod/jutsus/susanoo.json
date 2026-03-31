@@ -1,8 +1,12 @@
 {
-  "id": 102,
-  "nature": "none",
+  "id": 5,
   "type": "dojutsu",
   "name": "Susanoo",
-  "chakra_cost": 50.0,
-  "xp_cost": 40
+  "parent": "narutomod:mangekyou_sharingan",
+  "chakra_cost": 100.0,
+  "xp_cost": 40,
+  "grid_x": 4,
+  "grid_y": 0,
+  "required_sharingan": 4,
+  "required_clan": "UCHIHA"
 }

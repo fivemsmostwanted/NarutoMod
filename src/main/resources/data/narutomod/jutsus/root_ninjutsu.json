@@ -1,0 +1,11 @@
+{
+  "id": 0,
+  "type": "ninjutsu",
+  "name": "Ninjutsu Basics",
+  "chakra_cost": 0.0,
+  "xp_cost": 0,
+  "grid_x": 0,
+  "grid_y": 1,
+  "parent": "null",
+  "custom_icon": "minecraft:textures/item/book.png"
+}

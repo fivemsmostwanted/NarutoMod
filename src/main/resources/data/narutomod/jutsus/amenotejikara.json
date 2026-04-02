@@ -1,0 +1,16 @@
+{
+  "id": 107,
+  "type": "spacetime",
+  "name": "Amenotejikara",
+  "chakra_cost": 1200.0,
+  "cooldown": 0,
+  "hand_signs": [],
+  "xp_cost": 100,
+  "parent": "narutomod:rinnegan",
+  "grid_x": 6,
+  "grid_y": -2,
+  "required_level": 150,
+  "required_clan": "UCHIHA",
+  "required_sharingan": 6,
+  "custom_icon": "narutomod:textures/hud/rinnesharingan.png"
+}

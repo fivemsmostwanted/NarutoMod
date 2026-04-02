@@ -1,0 +1,14 @@
+{
+  "id": 108,
+  "nature": "lightning",
+  "type": "ninjutsu",
+  "name": "Chidori",
+  "chakra_cost": 10.0,
+  "cooldown": 0,
+  "hand_signs": [5, 2, 3],
+  "xp_cost": 20,
+  "parent": "narutomod:root_lightning",
+  "grid_x": 2,
+  "grid_y": 4,
+  "required_level": 25
+}

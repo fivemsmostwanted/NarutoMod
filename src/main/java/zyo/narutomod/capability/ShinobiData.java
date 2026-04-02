@@ -16,12 +16,14 @@ public class ShinobiData implements IShinobiData {
     private boolean sharinganActive = false;
     private boolean inKamui = false;
     private boolean cloneInfusionReady = false;
+    private boolean susanooActive = false;
 
     private int ninjutsuStat = 1;
     private int genjutsuStat = 1;
 
     private final Map<String, Integer> natureMastery = new HashMap<>();
     private final java.util.List<String> unlockedJutsus = new java.util.ArrayList<>();
+    private final Map<Integer, String> equippedJutsus = new HashMap<>();
     private final Map<String, Integer> activeCooldowns = new HashMap<>();
     private Clan clan = Clan.CLANLESS;
     private Archetype archetype = Archetype.NONE;
@@ -56,6 +58,12 @@ public class ShinobiData implements IShinobiData {
     @Override public Village getVillage() { return village; }
     @Override public void setVillage(Village village) { this.village = village; }
 
+    @Override public String getEquippedJutsu(int slotId) { return equippedJutsus.get(slotId); }
+    @Override public void setEquippedJutsu(int slotId, String jutsuId) { equippedJutsus.put(slotId, jutsuId); }
+
+    @Override public boolean isSusanooActive() { return susanooActive; }
+    @Override public void setSusanooActive(boolean active) { this.susanooActive = active; }
+
     @Override public Map<String, Integer> getActiveCooldowns() { return this.activeCooldowns; }
 
     private int msBleedTimer = 0;
@@ -73,6 +81,10 @@ public class ShinobiData implements IShinobiData {
     public void setCooldown(String jutsuId, int ticks) {
         this.activeCooldowns.put(jutsuId, ticks);
     }
+
+    private boolean chidoriActive = false;
+    @Override public boolean isChidoriActive() { return chidoriActive; }
+    @Override public void setChidoriActive(boolean active) { this.chidoriActive = active; }
 
     @Override
     public boolean isOnCooldown(String jutsuId) {
@@ -135,6 +147,8 @@ public class ShinobiData implements IShinobiData {
         this.village = source.getVillage();
         this.unlockedJutsus.clear();
         this.unlockedJutsus.addAll(source.getUnlockedJutsus());
+        this.susanooActive = source.isSusanooActive();
+        this.chidoriActive = source.isChidoriActive();
         if (source instanceof ShinobiData sData) {
             this.natureMastery.clear();
             this.natureMastery.putAll(sData.natureMastery);
@@ -157,6 +171,8 @@ public class ShinobiData implements IShinobiData {
         compound.putString("PlayerVillage", village.name());
         compound.putInt("ShinobiExperience", this.experience);
         compound.putFloat("PermanentChakraBonus", this.permanentChakraBonus);
+        compound.putBoolean("susanooActive", susanooActive);
+        compound.putBoolean("chidoriActive", chidoriActive);
 
         net.minecraft.nbt.ListTag jutsuList = new net.minecraft.nbt.ListTag();
         for (String jutsu : unlockedJutsus) {
@@ -169,6 +185,12 @@ public class ShinobiData implements IShinobiData {
             masteryTag.putInt(entry.getKey(), entry.getValue());
         }
         compound.put("NatureMastery", masteryTag);
+
+        CompoundTag loadoutTag = new CompoundTag();
+        for (Map.Entry<Integer, String> entry : equippedJutsus.entrySet()) {
+            loadoutTag.putString(String.valueOf(entry.getKey()), entry.getValue());
+        }
+        compound.put("EquippedJutsus", loadoutTag);
 
         CompoundTag cooldownTag = new CompoundTag();
         for (Map.Entry<String, Integer> entry : activeCooldowns.entrySet()) {
@@ -189,6 +211,8 @@ public class ShinobiData implements IShinobiData {
         genjutsuStat = compound.getInt("genjutsuStat");
         cloneInfusionReady = compound.getBoolean("CloneInfusionReady");
         permanentChakraBonus = compound.getFloat("PermanentChakraBonus");
+        susanooActive = compound.getBoolean("susanooActive");
+        chidoriActive = compound.getBoolean("chidoriActive");
 
         if (compound.contains("PlayerClan")) {
             try {
@@ -227,6 +251,14 @@ public class ShinobiData implements IShinobiData {
             CompoundTag masteryTag = compound.getCompound("NatureMastery");
             for (String key : masteryTag.getAllKeys()) {
                 this.natureMastery.put(key, masteryTag.getInt(key));
+            }
+        }
+
+        this.equippedJutsus.clear();
+        if (compound.contains("EquippedJutsus")) {
+            CompoundTag loadoutTag = compound.getCompound("EquippedJutsus");
+            for (String key : loadoutTag.getAllKeys()) {
+                this.equippedJutsus.put(Integer.parseInt(key), loadoutTag.getString(key));
             }
         }
 

@@ -23,5 +23,13 @@
   "chakra_charge": {
     "category": "player",
     "sounds": [ "narutomod:chakra_charge" ]
+  },
+  "dojutsu": {
+    "category": "player",
+    "subtitle": "narutomod.subtitle.dojutsu",
+    "sounds": [
+      "narutomod:dojutsu"
+    ]
   }
+
 }

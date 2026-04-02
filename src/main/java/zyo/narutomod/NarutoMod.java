@@ -35,6 +35,11 @@ public class NarutoMod {
         ModParticles.register(modEventBus);
         ModSounds.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
+
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new zyo.narutomod.events.CameraEvents());
+            LOGGER.info("!!! NARUTO MOD !!!: Camera logic registered.");
+        }
     }
 
     private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {

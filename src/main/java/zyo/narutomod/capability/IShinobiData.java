@@ -49,14 +49,23 @@ public interface IShinobiData {
     void unlockJutsu(String jutsuId);
     boolean hasJutsu(String jutsuId);
 
+    String getEquippedJutsu(int slotId);
+    void setEquippedJutsu(int slotId, String jutsuId);
+
     int getNatureMastery(String nature);
     void addNatureMastery(String nature, int amount);
 
     int getExperience();
     void setExperience(int xp);
 
+    boolean isSusanooActive();
+    void setSusanooActive(boolean active);
+
     int getMsBleedTimer();
     void setMsBleedTimer(int ticks);
+
+    boolean isChidoriActive();
+    void setChidoriActive(boolean active);
 
     void copyFrom(IShinobiData source);
 }

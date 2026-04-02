@@ -62,6 +62,7 @@ public class ServerEvents {
                 });
             }
 
+
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (stats.getClan() == zyo.narutomod.player.Clan.UCHIHA && stats.getSharinganStage() == 0) {
                     int uchihaTicks = player.getPersistentData().getInt("UchihaTicks");
@@ -194,7 +195,19 @@ public class ServerEvents {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            // --- SERVER DEBUG PRINT ---
+            System.out.println("================ SERVER LOGIN DEBUG ================");
+            System.out.println("Player " + player.getName().getString() + " logged in.");
+            System.out.println("Server Jutsu Count: " + zyo.narutomod.jutsu.JutsuManager.LOADED_JUTSUS.size());
+            System.out.println("====================================================");
+
             zyo.narutomod.jutsu.JutsuTreeManager.initializeTrees();
+
+            zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                    net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                    new zyo.narutomod.network.SyncJutsuRegistryPacket(zyo.narutomod.jutsu.JutsuManager.LOADED_JUTSUS)
+            );
+
             player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
                 if (stats.getClan() == zyo.narutomod.player.Clan.CLANLESS && stats.getVillage() == zyo.narutomod.player.Village.NONE) {
                     zyo.narutomod.config.NarutoConfig.SelectionMode mode = zyo.narutomod.config.NarutoConfig.SELECTION_MODE.get();

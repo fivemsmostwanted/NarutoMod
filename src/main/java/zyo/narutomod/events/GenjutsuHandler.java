@@ -69,6 +69,11 @@ public class GenjutsuHandler {
                 entity.getPersistentData().remove("TsukuyomiZ");
                 entity.getPersistentData().remove("TsukuyomiYaw");
                 entity.getPersistentData().remove("TsukuyomiPitch");
+
+                zyo.narutomod.network.PacketHandler.INSTANCE.send(
+                        net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                        new zyo.narutomod.network.SyncTsukuyomiPacket(entity.getId(), false, -1)
+                );
             }
         }
     }

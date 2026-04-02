@@ -28,9 +28,9 @@ public class ModClientEvents {
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_1.png"),
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_2.png"),
             ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png"),
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png"),
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png"),
-            ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/sharingan_3.png")
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/mangekyou_sharingan.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/eternal_mangekyou.png"),
+            ResourceLocation.parse(NarutoMod.MODID + ":textures/hud/rinnesharingan.png")
     };
 
     private static final ResourceLocation[] HANDSIGN_ICONS = {
@@ -98,6 +98,28 @@ public class ModClientEvents {
             net.minecraft.client.player.LocalPlayer player = mc.player;
             if (player == null) return;
 
+            // --- CLIENT-SIDE CHIDORI PARTICLES ---
+            player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
+                if (stats.isChidoriActive()) {
+                    // Calculate hand position
+                    double angle = Math.toRadians(player.yBodyRot + 45.0F);
+                    double ox = -Math.sin(angle) * 0.5;
+                    double oz = Math.cos(angle) * 0.5;
+
+                    // Spawn 3-4 lightning sparks every single tick
+                    for (int i = 0; i < 4; i++) {
+                        // High velocity (0.6) so they shoot violently OUTWARDS from the orb
+                        double vx = (Math.random() - 0.5) * 0.6;
+                        double vy = (Math.random() - 0.5) * 0.6;
+                        double vz = (Math.random() - 0.5) * 0.6;
+
+                        player.level().addParticle(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+                                player.getX() + ox, player.getY() + 1.1, player.getZ() + oz, vx, vy, vz);
+                    }
+                }
+            });
+            // --------------------------------------
+
 //            player.getCapability(zyo.narutomod.capability.ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
 //                if (stats.getMsBleedTimer() > 0) {
 //                    stats.setMsBleedTimer(stats.getMsBleedTimer() - 1);
@@ -131,12 +153,15 @@ public class ModClientEvents {
                 }
                 if (!wasCharging) {
                     zyo.narutomod.client.PlayerAnimManager.playAnimation(player, "chakraanim");
+                    // NEW: Broadcast Chakra Start
+                    PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.AnimationC2SPacket("chakraanim", true));
                     wasCharging = true;
                 }
             } else {
                 if (wasCharging) {
                     if (HandSignManager.getComboTimer() == 0) {
                         zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
+                        PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.AnimationC2SPacket("chakraanim", false));
                     }
                     wasCharging = false;
                 }
@@ -148,11 +173,14 @@ public class ModClientEvents {
             if (isSprinting && !isAttacking) {
                 if (!wasSprinting) {
                     zyo.narutomod.client.PlayerAnimManager.playAnimation(player, "naruto_run");
+                    // NEW: Broadcast Sprint Start
+                    PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.AnimationC2SPacket("naruto_run", true));
                     wasSprinting = true;
                 }
             } else {
                 if (wasSprinting) {
                     zyo.narutomod.client.PlayerAnimManager.stopAnimation(player);
+                    PacketHandler.INSTANCE.sendToServer(new zyo.narutomod.network.AnimationC2SPacket("naruto_run", false));
                     wasSprinting = false;
                 }
             }
@@ -348,4 +376,5 @@ public class ModClientEvents {
             event.getGuiGraphics().pose().popPose();
         }
     }
+
 }

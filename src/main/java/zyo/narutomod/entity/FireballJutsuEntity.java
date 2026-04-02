@@ -6,8 +6,10 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.network.NetworkHooks;
 import zyo.narutomod.particle.ModParticles;
@@ -42,8 +44,66 @@ public class FireballJutsuEntity extends ThrowableProjectile {
     }
 
     @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (FIREBALL_SCALE.equals(key)) {
+            this.refreshDimensions();
+        }
+    }
+
+    @Override
+    public net.minecraft.world.entity.EntityDimensions getDimensions(Pose pose) {
+        // Cap physical collision at 2.5 so it doesn't instantly blow up in your face on cast
+        float physicalScale = Math.min(this.getVisualScale(), 2.5F);
+        return super.getDimensions(pose).scale(physicalScale);
+    }
+
+    @Override
+    public AABB getBoundingBoxForCulling() {
+        // Prevents the massive fireball from turning invisible if the center goes off-screen
+        return this.getBoundingBox().inflate(this.getVisualScale());
+    }
+
+    @Override
     public void tick() {
         super.tick();
+
+        if (!this.level().isClientSide) {
+            // Visual radius is half of the visual scale. We use 0.45F to represent the "front edge"
+            // of the sphere with a tiny bit of leeway so it looks like it truly impacts.
+            float visualRadius = this.getVisualScale() * 0.45F;
+            net.minecraft.world.phys.Vec3 center = this.position();
+            net.minecraft.world.phys.Vec3 movement = this.getDeltaMovement();
+
+            if (movement.lengthSqr() > 0.0001D) {
+                net.minecraft.world.phys.Vec3 dir = movement.normalize();
+
+                // 1. Forward Raytrace for Mountain/Block Impacts
+                net.minecraft.world.phys.Vec3 frontEdge = center.add(dir.scale(visualRadius));
+                net.minecraft.world.phys.BlockHitResult blockHit = this.level().clip(new net.minecraft.world.level.ClipContext(
+                        center, frontEdge,
+                        net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                        net.minecraft.world.level.ClipContext.Fluid.NONE,
+                        this));
+
+                if (blockHit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) {
+                    this.onHit(blockHit);
+                    return; // Stop ticking, the fireball just exploded!
+                }
+            }
+
+            net.minecraft.world.phys.AABB massiveBox = this.getBoundingBox().inflate(visualRadius);
+            java.util.List<net.minecraft.world.entity.Entity> entities = this.level().getEntities(this, massiveBox, e ->
+                    !e.isSpectator() && e.isPickable() && e != this.getOwner()
+            );
+
+            for (net.minecraft.world.entity.Entity e : entities) {
+                if (e.distanceToSqr(this) <= (visualRadius * visualRadius)) {
+                    this.onHit(new net.minecraft.world.phys.EntityHitResult(e));
+                    return;
+                }
+            }
+        }
 
         if (this.level().isClientSide) {
             float scale = this.getVisualScale();

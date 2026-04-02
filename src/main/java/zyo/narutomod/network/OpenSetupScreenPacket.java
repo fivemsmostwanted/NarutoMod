@@ -18,9 +18,8 @@ public class OpenSetupScreenPacket {
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                net.minecraft.client.Minecraft.getInstance().setScreen(new zyo.narutomod.client.gui.CharacterCreationScreen());
-            });
+            // Safe! The server doesn't load ClientPacketHandler unless Dist == CLIENT
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleOpenSetupScreen());
         });
         context.setPacketHandled(true);
     }

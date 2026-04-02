@@ -32,7 +32,19 @@ public class InstantGenjutsuPacket {
             if (player == null) return;
 
             player.getCapability(ShinobiDataProvider.SHINOBI_DATA).ifPresent(stats -> {
-                if (this.slotId == 1 || this.slotId == 2) {
+                String equippedJutsuId = stats.getEquippedJutsu(this.slotId);
+
+                if (equippedJutsuId == null) {
+                    if (this.slotId == 1 && stats.hasJutsu("narutomod:shackling_stakes")) equippedJutsuId = "narutomod:shackling_stakes";
+                    if (this.slotId == 2 && stats.hasJutsu("narutomod:crow_clone_feint")) equippedJutsuId = "narutomod:crow_clone_feint";
+                }
+
+                if (equippedJutsuId == null || !stats.hasJutsu(equippedJutsuId)) {
+                    player.displayClientMessage(Component.literal("§cNo Jutsu equipped in this slot!"), true);
+                    return;
+                }
+
+                if (equippedJutsuId.contains("shackling_stakes") || equippedJutsuId.contains("crow_clone")) {
                     if (!stats.isSharinganActive()) {
                         player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cYou must activate your Sharingan first!"), true);
                         player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -40,15 +52,9 @@ public class InstantGenjutsuPacket {
                     }
                 }
 
-                ResourceLocation targetJutsu = null;
-                if (this.slotId == 1 && stats.hasJutsu("narutomod:shackling_stakes"))
-                    targetJutsu = ResourceLocation.fromNamespaceAndPath("narutomod", "shackling_stakes");
-                if (this.slotId == 2 && stats.hasJutsu("narutomod:crow_clone"))
-                    targetJutsu = ResourceLocation.fromNamespaceAndPath("narutomod", "crow_clone_feint");
+                ResourceLocation targetJutsu = ResourceLocation.tryParse(equippedJutsuId);
                 if (targetJutsu != null) {
                     JutsuRegistry.executeInstant(targetJutsu, player);
-                } else {
-                    player.displayClientMessage(Component.literal("§cYou haven't learned this Genjutsu yet!"), true);
                 }
             });
         });

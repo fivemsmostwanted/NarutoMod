@@ -8,5 +8,5 @@
   "xp_cost": 0,
   "grid_x": 1,
   "grid_y": 4,
-  "custom_icon": "narutomod:textures/gui/jutsus/nature_lightning.png"
+  "custom_icon": "narutomod:textures/gui/lightning/nature_lightning.png"
 }

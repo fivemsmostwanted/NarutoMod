@@ -2,11 +2,14 @@
   "id": 106,
   "type": "genjutsu",
   "name": "Tsukuyomi",
-  "parent": "narutomod:mangekyou_sharingan",
-  "chakra_cost": 200.0,
+  "chakra_cost": 220.0,
+  "cooldown": 600,
+  "hand_signs": [],
   "xp_cost": 50,
+  "parent": "narutomod:mangekyou_sharingan",
   "grid_x": 5,
   "grid_y": -3,
-  "required_sharingan": 4,
-  "required_clan": "UCHIHA"
+  "required_level": 30,
+  "required_clan": "UCHIHA",
+  "required_sharingan": 4
 }

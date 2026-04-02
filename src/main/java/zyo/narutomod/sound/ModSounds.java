@@ -11,16 +11,17 @@ import zyo.narutomod.NarutoMod;
 public class ModSounds {
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, NarutoMod.MODID);
+
     public static final RegistryObject<SoundEvent> HANDSIGN = registerSoundEvent("handsign");
     public static final RegistryObject<SoundEvent> JUTSU_CAST = registerSoundEvent("jutsu_cast");
     public static final RegistryObject<SoundEvent> JUTSU_FAIL = registerSoundEvent("jutsu_fail");
     public static final RegistryObject<SoundEvent> CHAKRA_CHARGE = registerSoundEvent("chakra_charge");
+    public static final RegistryObject<SoundEvent> DOJUTSU = registerSoundEvent("dojutsu");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NarutoMod.MODID, name)));
     }
 
-    // 3. Hook to Main Mod Bus
     public static void register(IEventBus eventBus) {
         SOUNDS.register(eventBus);
     }
